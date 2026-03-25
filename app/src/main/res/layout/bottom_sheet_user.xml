@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="16dp"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:scaleType="centerCrop"
+            android:clipToOutline="true"
+            android:background="@drawable/circle_bg"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_marginStart="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/txtName"
+                android:text="Messi"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/txtBio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="Ronaldo is my idol"
+                android:textColor="#666"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+    <Button
+        android:id="@+id/btnProfile"
+        android:text="View Profile"
+        android:textColor="#FFF"
+        android:backgroundTint="#2F5BFF"
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"/>
+    <Button
+        android:id="@+id/btnChat"
+        android:text="Chat"
+        android:textColor="#000"
+        android:backgroundTint="#E0E0E0"
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"/>
+    <TextView
+        android:id="@+id/btnCancel"
+        android:text="Cancel"
+        android:textColor="#2F5BFF"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
