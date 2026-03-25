@@ -43,9 +43,15 @@ class UserBottomSheet(private val user: User) : BottomSheetDialogFragment() {
     private fun setupActions(btnProfile: Button, btnChat: Button, btnCancel: TextView) {
         btnProfile.setOnClickListener {
             navigate(ProfileFragment())
+            dismiss()
         }
         btnChat.setOnClickListener {
-            navigate(ChatBox())
+            // ================= NOTE =================
+            // Node 5 chỉ gửi user.id để Node 4 handle ChatBox + Firebase logic
+            // Node 3 handle Media (Camera/Gallery, nén, upload)
+            // Tôi có viết func navigate cho tái xử dụng
+            Toast.makeText(requireContext(), "Lấy id user để getIn4 cho UI", Toast.LENGTH_SHORT).show()
+            dismiss()
         }
         btnCancel.setOnClickListener {
             dismiss()
@@ -56,11 +62,9 @@ class UserBottomSheet(private val user: User) : BottomSheetDialogFragment() {
         fragment.arguments = Bundle().apply {
             putString(KEY_USER_ID, user.id)
         }
-
         parentFragmentManager.beginTransaction()
             .replace(R.id.nav_host_fragment, fragment)
             .addToBackStack(null)
             .commit()
-        dismiss()
     }
 }

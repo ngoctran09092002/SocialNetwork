@@ -42,7 +42,7 @@ class EditProfileDialog : DialogFragment() {
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 avt.setImageURI(it)
-                avt.tag = it.toString() // lưu URI để save
+                avt.tag = it.toString()
             }
         }
 

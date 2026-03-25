@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.socialn.core.interfaces.IAuthService
@@ -67,7 +68,17 @@ class ProfileFragment : Fragment(R.layout.profile) {
         }
 
         btnBack.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
-        btnMessage.setOnClickListener { profileId?.let { navigateToChat(it) } }
+
+        btnMessage.setOnClickListener {
+            profileId?.let { userId ->
+                // ================= NOTE =================
+                // Node 5 hiện tại chỉ gửi userId để Node 4 handle chat
+                // Node 4 sẽ implement ChatBox / Firebase Realtime DB
+                // Node 3 sẽ handle Media upload, nén, trả URL nếu cần
+                Toast.makeText(requireContext(), "Lấy id user để getIn4 cho UI", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         btnEdit.setOnClickListener { showEditDialog() }
     }
 
@@ -99,15 +110,5 @@ class ProfileFragment : Fragment(R.layout.profile) {
             }
         }
         dialog.show(parentFragmentManager, "EditProfileDialog")
-    }
-
-    private fun navigateToChat(userId: String) {
-        val fragment = ChatBox().apply {
-            arguments = Bundle().apply { putString("userId", userId) }
-        }
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, fragment)
-            .addToBackStack(null)
-            .commit()
     }
 }

@@ -16,7 +16,6 @@ import com.example.socialnetwork.adapter.UserAdapter
 import kotlinx.coroutines.launch
 
 class SearchFragment : Fragment() {
-
     private val userRepository: IUserRepository = MockUserRepository
 
     private lateinit var recyclerView: RecyclerView
