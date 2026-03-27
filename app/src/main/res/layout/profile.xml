@@ -92,21 +92,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddFriend"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_margin="16dp"
-            android:text="Add Friend"
-            android:textAllCaps="false"
-            android:textColor="#FFF"
-            android:visibility="visible"
-            app:backgroundTint="#2D5BFF"
-            app:cornerRadius="28dp"
-            app:iconPadding="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvBio" />
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:id="@+id/btnAddFriend"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="56dp"-->
+<!--            android:layout_margin="16dp"-->
+<!--            android:text="Add Friend"-->
+<!--            android:textAllCaps="false"-->
+<!--            android:textColor="#FFF"-->
+<!--            android:visibility="visible"-->
+<!--            app:backgroundTint="#2D5BFF"-->
+<!--            app:cornerRadius="28dp"-->
+<!--            app:iconPadding="8dp"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/tvBio" />-->
 
         <com.google.android.material.button.MaterialButton
             android:visibility="visible"
@@ -115,13 +115,12 @@
             android:layout_height="56dp"
             android:text="Message"
             android:textAllCaps="false"
-            android:textColor="#2D5BFF"
-            app:strokeColor="#2D5BFF"
+            android:textColor="#FFF"
+            app:strokeColor="#29608C"
             app:strokeWidth="2dp"
             app:cornerRadius="28dp"
-            android:backgroundTint="@android:color/transparent"
-            app:iconTint="#2D5BFF"
-            app:layout_constraintTop_toBottomOf="@id/btnAddFriend"
+            app:backgroundTint="#2D5BFF"
+            app:layout_constraintTop_toBottomOf="@id/tvBio"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginHorizontal="16dp"

@@ -20,7 +20,7 @@ class ProfileFragment : Fragment(R.layout.profile) {
     private lateinit var avt: ImageView
     private lateinit var tvName: TextView
     private lateinit var tvBio: TextView
-    private lateinit var btnAdd: View
+//    private lateinit var btnAdd: View
     private lateinit var btnMessage: View
     private lateinit var btnBack: View
     private lateinit var btnEdit: View
@@ -40,7 +40,7 @@ class ProfileFragment : Fragment(R.layout.profile) {
         avt = view.findViewById(R.id.imgAvatar)
         tvName = view.findViewById(R.id.tvName)
         tvBio = view.findViewById(R.id.tvBio)
-        btnAdd = view.findViewById(R.id.btnAddFriend)
+//        btnAdd = view.findViewById(R.id.btnAddFriend)
         btnMessage = view.findViewById(R.id.btnMessage)
         btnBack = view.findViewById(R.id.btnBack)
         btnEdit = view.findViewById(R.id.btnEdit)
@@ -50,12 +50,12 @@ class ProfileFragment : Fragment(R.layout.profile) {
         val isMyProfile = profileId == currentUserId
 
         if (isMyProfile) {
-            btnAdd.visibility = View.GONE
+//            btnAdd.visibility = View.GONE
             btnMessage.visibility = View.GONE
             btnBack.visibility = View.GONE
             btnEdit.visibility = View.VISIBLE
         } else {
-            btnAdd.visibility = View.VISIBLE
+//            btnAdd.visibility = View.VISIBLE
             btnMessage.visibility = View.VISIBLE
             btnBack.visibility = View.VISIBLE
             btnEdit.visibility = View.GONE
