@@ -1,4 +1,4 @@
-package com.example.socialn.core.interfaces
+package com.example.socialnetwork.core.interfaces
 
 import com.example.socialnetwork.core.models.Post
 import com.example.socialnetwork.core.models.Message
