@@ -14,13 +14,15 @@ import androidx.lifecycle.lifecycleScope
 import com.example.socialn.core.interfaces.IUserRepository
 import com.example.socialnetwork.R
 import com.example.socialnetwork.core.models.User
-import com.example.socialnetwork.mock.MockUserRepository
+import com.example.socialnetwork.firebase.FirebaseUserRepository
 import kotlinx.coroutines.launch
+
+import com.bumptech.glide.Glide
 
 class EditProfileDialog : DialogFragment() {
 
     private var userId: String? = null
-    private val userRepository: IUserRepository = MockUserRepository
+    private val userRepository: IUserRepository = FirebaseUserRepository()
 
     private lateinit var avt: ImageView
     private lateinit var edtName: EditText
@@ -67,7 +69,7 @@ class EditProfileDialog : DialogFragment() {
         btnSave.setOnClickListener {
             val newName = edtName.text.toString()
             val newBio = edtBio.text.toString()
-            val newAvatarUrl = avt.tag as? String ?: "profile"
+            val newAvatarUrl = avt.tag as? String ?: ""
 
             val updatedUser = User(
                 id = userId ?: "me",
@@ -77,8 +79,8 @@ class EditProfileDialog : DialogFragment() {
             )
 
             lifecycleScope.launch {
-                if (userRepository is MockUserRepository) {
-                    (userRepository as MockUserRepository).updateUser(updatedUser)
+                if (userRepository is FirebaseUserRepository) {
+                    (userRepository as FirebaseUserRepository).updateUser(updatedUser)
                 }
 
                 listener?.onProfileUpdated(updatedUser)
@@ -96,21 +98,15 @@ class EditProfileDialog : DialogFragment() {
 
                 avt.tag = it.avatarUrl
 
-                if (it.avatarUrl.startsWith("content://")) {
-                    avt.setImageURI(android.net.Uri.parse(it.avatarUrl))
-                } else {
-                    val resId = resources.getIdentifier(
-                        it.avatarUrl,
-                        "drawable",
-                        requireContext().packageName
-                    )
-                    avt.setImageResource(
-                        if (resId != 0) resId else R.drawable.profile
-                    )
-                }
-                limitText.text = "${it.bio?.length ?: 0}/150"
+                Glide.with(requireContext())
+                    .load(it.avatarUrl)
+                    .placeholder(R.drawable.profile)
+                    .into(avt)
+
+                limitText.text = "${it.bio.length}/150"
             }
         }
+
         edtBio.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val length = s?.length ?: 0
@@ -119,6 +115,7 @@ class EditProfileDialog : DialogFragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+
         avt.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }

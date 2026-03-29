@@ -3,6 +3,7 @@ package com.example.socialnetwork.ui
 import android.os.Bundle
 import android.view.*
 import android.widget.*
+import com.bumptech.glide.Glide
 import com.example.socialnetwork.*
 import com.example.socialnetwork.core.models.User
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -32,12 +33,10 @@ class UserBottomSheet(private val user: User) : BottomSheetDialogFragment() {
         name.text = user.name
         bio.text = user.bio
 
-        val resId = resources.getIdentifier(
-            user.avatarUrl,
-            "drawable",
-            requireContext().packageName
-        )
-        avatar.setImageResource(if (resId != 0) resId else R.drawable.profile)
+        Glide.with(requireContext())
+            .load(user.avatarUrl)
+            .placeholder(R.drawable.profile)
+            .into(avatar)
     }
 
     private fun setupActions(btnProfile: Button, btnChat: Button, btnCancel: TextView) {
