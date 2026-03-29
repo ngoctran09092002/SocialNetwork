@@ -105,7 +105,7 @@ class FeedViewModel(
             try {
                 val db = FirebaseFirestore.getInstance()
                 val userDoc = db.collection("users").document(currentUserId).get().await()
-                val username = userDoc.getString("username") ?: "User"
+                val username = userDoc.getString("name") ?: "User"
                 val avatarUrl = userDoc.getString("avatarUrl") ?: ""
 
                 val comment = Comment(

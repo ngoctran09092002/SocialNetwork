@@ -82,8 +82,8 @@ class PostAdapter(
     }
 
     private fun loadUserInfo(holder: PostViewHolder, userId: String) {
-        userCache[userId]?.let { (username, avatarUrl) ->
-            holder.txtUserName.text = username
+        userCache[userId]?.let { (name, avatarUrl) ->
+            holder.txtUserName.text = name
             Glide.with(holder.itemView.context)
                 .load(avatarUrl)
                 .placeholder(R.drawable.ic_launcher_background)
@@ -97,7 +97,7 @@ class PostAdapter(
             try {
                 val db = FirebaseFirestore.getInstance()
                 val userDoc = db.collection("users").document(userId).get().await()
-                val username = userDoc.getString("username") ?: "User ${userId.take(6)}"
+                val username = userDoc.getString("name") ?: "User ${userId.take(6)}"
                 val avatarUrl = userDoc.getString("avatarUrl") ?: ""
 
                 userCache[userId] = Pair(username, avatarUrl)
