@@ -9,7 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.socialnetwork"
+        applicationId = "social123.oshi"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -32,6 +32,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 dependencies {
@@ -42,7 +46,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")        // Authentication
     implementation("com.google.firebase:firebase-firestore-ktx")   // Cloud Firestore
     implementation("com.google.firebase:firebase-database-ktx")    // Realtime Database
-    implementation("com.google.firebase:firebase-storage-ktx")     // Cloud Storage
 
     // AndroidX + UI
     implementation("androidx.core:core-ktx:1.15.0")
@@ -55,6 +58,9 @@ dependencies {
     implementation("androidx.credentials:credentials:1.6.0-beta01")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0-beta01")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Test
     testImplementation("junit:junit:4.13.2")
