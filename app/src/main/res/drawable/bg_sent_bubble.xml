@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Màu nền tin nhắn gửi -->
+    <solid android:color="#DCF8C6"/> <!-- màu xanh nhạt kiểu WhatsApp -->
+
+    <!-- Bo góc -->
+    <corners
+        android:topLeftRadius="16dp"
+        android:topRightRadius="16dp"
+        android:bottomLeftRadius="16dp"
+        android:bottomRightRadius="0dp"/> <!-- góc cuối cùng không bo để nhọn về phía avatar -->
+
+    <!-- Padding bên trong -->
+    <padding
+        android:left="12dp"
+        android:top="8dp"
+        android:right="12dp"
+        android:bottom="8dp"/>
+</shape>
