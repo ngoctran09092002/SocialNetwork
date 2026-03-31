@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -45,13 +46,14 @@ android {
 
 dependencies {
     // Firebase BOM để đồng bộ version
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
 
     // Firebase core services
     implementation("com.google.firebase:firebase-auth")        // Authentication
     implementation("com.google.firebase:firebase-firestore")   // Cloud Firestore
     implementation("com.google.firebase:firebase-database")    // Realtime Database
-    implementation("com.google.firebase:firebase-storage")     // Cloud Storage
+    implementation("com.google.firebase:firebase-storage")  // Cloud Storage
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
     //implementation("com.google.firebase:firebase-auth-ktx")        // Authentication
     //implementation("com.google.firebase:firebase-firestore-ktx")   // Cloud Firestore
     //implementation("com.google.firebase:firebase-database-ktx")    // Realtime Database

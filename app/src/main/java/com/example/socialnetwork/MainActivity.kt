@@ -4,6 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.socialnetwork.ui.ProfileFragment
+import com.example.socialnetwork.ui.SearchFragment
+//import com.google.firebase.firestore.FirebaseFirestore
 import com.example.socialnetwork.feed.ChatListFragment
 import com.example.socialnetwork.feed.FeedFragment
 import com.example.socialnetwork.feed.PostFragment
@@ -45,6 +48,11 @@ class MainActivity : AppCompatActivity() {
                     replaceFragment(ProfileFragment()) // Node 5
                     true
                 }
+                R.id.nav_search -> {
+                    replaceFragment(SearchFragment())//Tìm kiếm
+                    true
+                }
+
                 else -> false
             }
         }
