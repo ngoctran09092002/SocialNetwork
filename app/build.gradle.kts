@@ -2,23 +2,26 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.kapt")
 }
 
 android {
     namespace = "com.example.socialnetwork"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "social123.oshi"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    buildFeatures {
+        viewBinding = true
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -41,10 +44,30 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 
 dependencies {
+    // Import Bom (Bill of Materials) để quản lý phiên bản dễ dàng hơn
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    // Các thư viện Compose cốt lõi
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.runtime:runtime") // <-- Thư viện lỗi đang báo thiếu
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+
+    // Hỗ trợ Activity và ViewModel cho Compose
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // Tooling để debug (chỉ chạy trên máy ảo/máy thật khi debug)
+    debugImplementation("androidx.compose.ui:ui-tooling")
     // Firebase BOM để đồng bộ version
     implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
 

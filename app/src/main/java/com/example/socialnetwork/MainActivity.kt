@@ -1,7 +1,9 @@
 package com.example.socialnetwork
 
 import android.content.Intent
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.ui.ProfileFragment
@@ -12,12 +14,12 @@ import com.example.socialnetwork.feed.FeedFragment
 import com.example.socialnetwork.feed.PostFragment
 import com.example.socialnetwork.feed.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.example.socialnetwork.ui.ChatActivity
 import com.example.socialnetwork.feed.ui.FeedActivity
 import com.example.socialnetwork.media.MediaTestFragment
 
 class MainActivity : AppCompatActivity() {
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
