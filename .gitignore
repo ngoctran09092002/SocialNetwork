@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+
+.claude/
+.specify/
+SPEC.md
+
+/google-services.json
