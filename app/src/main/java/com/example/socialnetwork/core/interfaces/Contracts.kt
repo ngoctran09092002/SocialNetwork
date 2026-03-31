@@ -1,5 +1,6 @@
-package com.example.socialn.core.interfaces
+package com.example.socialnetwork.core.interfaces
 
+import com.example.socialnetwork.core.models.Comment
 import com.example.socialnetwork.core.models.Post
 import com.example.socialnetwork.core.models.Message
 import com.example.socialnetwork.core.models.User
@@ -19,6 +20,9 @@ interface IMediaService {
 interface IFeedRepository {
     suspend fun getTimelinePosts(): List<Post>
     suspend fun createPost(post: Post): Boolean
+    suspend fun likePost(postId: String, userId: String)
+    suspend fun addComment(postId: String, comment: Comment)
+    suspend fun getCommentCount(postId: String): Int
 }
 
 // Node 4 (Chat) implement. Lắng nghe tin nhắn realtime.

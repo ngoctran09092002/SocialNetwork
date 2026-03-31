@@ -26,3 +26,13 @@ app/.idea/
 .idea/workspace.xml
 .idea/navEditor.xml
 .idea/assetWizardSettings.xml
+.externalNativeBuild
+.cxx
+local.properties
+
+
+.claude/
+.specify/
+SPEC.md
+
+/google-services.json
