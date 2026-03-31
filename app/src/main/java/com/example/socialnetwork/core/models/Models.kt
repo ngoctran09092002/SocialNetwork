@@ -13,7 +13,18 @@ data class Post(
     val imageUrl: String = "",
     val caption: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val likesCount: Int = 0
+    val likesCount: Int = 0,
+    val commentCount: Int = 0
+)
+
+data class Comment(
+    val id: String = "",
+    val postId: String = "",
+    val userId: String = "",
+    val username: String = "",
+    val avatarUrl: String = "",
+    val content: String = "",
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 data class Message(
@@ -24,3 +35,5 @@ data class Message(
     val type: String = "TEXT", // hoặc "IMAGE"
     val timestamp: Long = System.currentTimeMillis()
 )
+
+
