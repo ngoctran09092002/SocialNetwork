@@ -7,7 +7,7 @@ import com.google.firebase.database.*
 class ChatRepositoryImpl : IChatRepository {
 
     // Reference tới node "chats" trong Firebase Realtime Database
-    private val dbRef: DatabaseReference = FirebaseDatabase.getInstance("https://socialnetwork-756a0-default-rtdb.firebaseio.com/").getReference("chats")
+    private val dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("chats")
 
     /**
      * Lắng nghe tin nhắn mới theo chatRoomId (ví dụ chatId = senderId_receiverId)
