@@ -54,11 +54,16 @@ class PostAdapter(
 
         updateLikeButton(holder.btnLike, isLiked)
 
-        Glide.with(holder.itemView.context)
-            .load(post.imageUrl)
-            .placeholder(R.drawable.ic_launcher_background)
-            .error(R.drawable.ic_launcher_background)
-            .into(holder.imgPost)
+        if (post.imageUrl.isNullOrEmpty()) {
+            holder.imgPost.visibility = View.GONE
+        } else {
+            holder.imgPost.visibility = View.VISIBLE
+            Glide.with(holder.itemView.context)
+                .load(post.imageUrl)
+                .placeholder(R.color.bg_screen)
+                .error(R.color.bg_screen)
+                .into(holder.imgPost)
+        }
 
         loadUserInfo(holder, post.authorId)
 
@@ -86,8 +91,8 @@ class PostAdapter(
             holder.txtUserName.text = name
             Glide.with(holder.itemView.context)
                 .load(avatarUrl)
-                .placeholder(R.drawable.ic_launcher_background)
-                .error(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.profile)
+                .error(R.drawable.profile)
                 .circleCrop()
                 .into(holder.imgAvatar)
             return

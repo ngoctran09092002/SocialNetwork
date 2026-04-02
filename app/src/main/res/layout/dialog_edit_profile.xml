@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Form container -->
     <LinearLayout
         android:id="@+id/formContainer"
         android:layout_width="0dp"
@@ -17,60 +16,76 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-        <!-- HEADER -->
+
+        <!-- Header -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edit Profile"
+                android:text="Chỉnh sửa hồ sơ"
                 android:textStyle="bold"
                 android:textSize="18sp"
-                android:textColor="#111827"
-                android:layout_alignParentStart="true"/>
+                android:textColor="@color/text_primary"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" />
+
             <ImageView
                 android:id="@+id/btnClose"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_alignParentEnd="true"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"/>
+                android:layout_centerVertical="true"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="@color/text_secondary" />
+
         </RelativeLayout>
+
         <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#E5E7EB"
-            android:layout_marginVertical="12dp"/>
+            android:background="@color/divider"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp" />
+
         <!-- Avatar + camera -->
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
+
             <ImageView
                 android:id="@+id/avt"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:background="@drawable/circle_bg"
                 android:clipToOutline="true"
-                android:scaleType="centerCrop"/>
+                android:scaleType="centerCrop" />
+
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_gravity="bottom|end"
                 android:layout_margin="2dp"
                 android:padding="6dp"
                 android:background="@drawable/ic_camera"
-                android:src="@drawable/camera1"/>
+                android:src="@drawable/camera1" />
+
         </FrameLayout>
-        <!-- Name -->
+
+        <!-- Name label -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Name"
-            android:textColor="#374151"
+            android:text="Tên hiển thị"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp" />
+
         <EditText
             android:id="@+id/edtName"
             android:maxLines="1"
@@ -78,37 +93,43 @@
             android:layout_height="48dp"
             android:background="@drawable/bg_input"
             android:paddingHorizontal="14dp"
-            android:textColor="#111827"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
             android:textSize="14sp"
-            android:layout_marginTop="6dp"/>
-        <!-- Bio -->
+            android:layout_marginTop="6dp" />
+
+        <!-- Bio label -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bio"
-            android:textColor="#374151"
+            android:text="Tiểu sử"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="12dp" />
+
         <EditText
-            android:maxLength="150"
             android:id="@+id/edtBio"
+            android:maxLength="150"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:background="@drawable/bg_input"
             android:gravity="top"
             android:padding="14dp"
-            android:textColor="#111827"
-            android:layout_marginTop="6dp"/>
-        <!-- Counter -->
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:layout_marginTop="6dp" />
+
         <TextView
             android:id="@+id/limitText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="91/150"
-            android:textColor="#6B7280"
+            android:text="0/150"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp"
             android:layout_gravity="end"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="4dp" />
+
         <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -116,6 +137,7 @@
             android:orientation="horizontal"
             android:gravity="end"
             android:layout_marginTop="16dp">
+
             <TextView
                 android:id="@+id/btnCancel"
                 android:layout_width="wrap_content"
@@ -123,19 +145,24 @@
                 android:background="@drawable/btn_cancel"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="10dp"
-                android:text="Cancel"
-                android:textColor="#111827"/>
+                android:text="Hủy"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
             <TextView
                 android:id="@+id/btnSave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:background="@drawable/btn_save"
+                android:background="@drawable/bg_send_btn"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="10dp"
-                android:text="Save"
-                android:textColor="#FFFFFF"/>
+                android:text="Lưu"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

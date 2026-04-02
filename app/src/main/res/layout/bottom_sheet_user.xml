@@ -1,68 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:padding="16dp"
-    android:orientation="vertical"
-    android:background="#F5F5F5"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/bg_surface"
+    android:paddingBottom="24dp">
+
+    <!-- Drag handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/divider" />
+
+    <!-- User info row -->
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="16dp">
+
         <ImageView
             android:id="@+id/imgAvatar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="14dp"
             android:scaleType="centerCrop"
             android:clipToOutline="true"
-            android:background="@drawable/circle_bg"/>
+            android:background="@drawable/circle_bg"
+            android:src="@drawable/profile" />
+
         <LinearLayout
-            android:orientation="vertical"
-            android:layout_marginStart="12dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
             <TextView
                 android:id="@+id/txtName"
-                android:text="Messi"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:text="Messi" />
 
             <TextView
                 android:id="@+id/txtBio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:maxLines="1"
-                android:text="Ronaldo is my idol"
-                android:textColor="#666"
+                android:ellipsize="end"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
+
         </LinearLayout>
+
     </LinearLayout>
-    <Button
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Action buttons -->
+    <TextView
         android:id="@+id/btnProfile"
-        android:text="View Profile"
-        android:textColor="#FFF"
-        android:backgroundTint="#2F5BFF"
-        android:layout_marginTop="16dp"
         android:layout_width="match_parent"
-        android:layout_height="48dp"/>
-    <Button
+        android:layout_height="52dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="Xem trang cá nhân"
+        android:textColor="@color/primary"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/btnChat"
-        android:text="Chat"
-        android:textColor="#000"
-        android:backgroundTint="#E0E0E0"
-        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
-        android:layout_height="48dp"/>
+        android:layout_height="52dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="Nhắn tin"
+        android:textColor="@color/text_primary"
+        android:textSize="15sp" />
+
     <TextView
         android:id="@+id/btnCancel"
-        android:text="Cancel"
-        android:textColor="#2F5BFF"
-        android:gravity="center"
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="52dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="Hủy"
+        android:textColor="@color/text_secondary"
+        android:textSize="15sp" />
+
 </LinearLayout>

@@ -32,6 +32,7 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
             val intent = Intent(requireContext(), ChatActivity::class.java).apply {
                 putExtra("receiverId", user.id)
                 putExtra("receiverName", user.name)
+                putExtra("receiverAvatar", user.avatarUrl)
             }
             startActivity(intent)
         }
