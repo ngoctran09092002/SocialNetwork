@@ -8,42 +8,40 @@ import com.example.socialnetwork.repository.ChatRepositoryImpl
 
 class ChatViewModel : ViewModel() {
 
-    // Khởi tạo Repository thực thi (Impl)
     private val repository = ChatRepositoryImpl()
+    private val _messages = MutableLiveData<List<Message>>(emptyList())
+    val messages: LiveData<List<Message>> = _messages
 
-    // Danh sách tin nhắn để Activity quan sát
-    private val _messages = MutableLiveData<MutableList<Message>>(mutableListOf())
-    val messages: LiveData<MutableList<Message>> = _messages
+    // Tránh đăng ký listener nhiều lần khi Activity rotate
+    private var isObserving = false
 
-    /**
-     * Bắt đầu lắng nghe tin nhắn giữa 2 người
-     */
     fun startObservingMessages(senderId: String, receiverId: String) {
-        // Tạo ChatRoomId giống logic trong Repository
+        if (isObserving) return
+        isObserving = true
+
         val chatRoomId = if (senderId < receiverId) "${senderId}_${receiverId}"
         else "${receiverId}_${senderId}"
 
         repository.observeMessages(chatRoomId) { newMessage ->
-            // Khi có tin nhắn mới từ Firebase, thêm vào list hiện tại
-            val currentList = _messages.value ?: mutableListOf()
-            currentList.add(newMessage)
-            _messages.postValue(currentList)
+            val updated = _messages.value.orEmpty().toMutableList()
+            updated.add(newMessage)
+            _messages.postValue(updated)
         }
     }
 
-    /**
-     * Hàm gọi gửi tin nhắn
-     */
     fun sendMessage(content: String, senderId: String, receiverId: String) {
         if (content.isBlank()) return
-
         val message = Message(
             senderId = senderId,
             receiverId = receiverId,
             content = content,
             timestamp = System.currentTimeMillis()
         )
-
         repository.sendMessage(message)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        repository.removeListener()
     }
 }

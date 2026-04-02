@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adapter.UserAdapter
-import com.example.socialn.core.interfaces.IAuthService
-import com.example.socialn.core.interfaces.IUserRepository
+import com.example.socialnetwork.core.interfaces.IAuthService
+import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.core.models.User
 import com.example.socialnetwork.firebase.FirebaseAuthService
 import com.example.socialnetwork.firebase.FirebaseUserRepository

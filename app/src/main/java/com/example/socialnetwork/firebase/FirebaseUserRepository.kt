@@ -1,7 +1,7 @@
 package com.example.socialnetwork.firebase
 
 import android.util.Log
-import com.example.socialn.core.interfaces.IUserRepository
+import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.core.models.User
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await

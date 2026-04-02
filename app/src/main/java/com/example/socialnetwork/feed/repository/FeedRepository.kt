@@ -1,7 +1,7 @@
 package com.example.socialnetwork.features.feed.repository
 
 import android.util.Log
-import com.example.socialn.core.interfaces.IFeedRepository
+import com.example.socialnetwork.core.interfaces.IFeedRepository
 import com.example.socialnetwork.core.models.Comment
 import com.example.socialnetwork.core.models.Post
 import com.google.firebase.firestore.FieldValue

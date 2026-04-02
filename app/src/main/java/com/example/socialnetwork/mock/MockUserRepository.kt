@@ -1,5 +1,5 @@
 package com.example.socialnetwork.mock
-import com.example.socialn.core.interfaces.IUserRepository
+import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.core.models.User
 
 object  MockUserRepository : IUserRepository {

@@ -62,7 +62,7 @@ class UserBottomSheet(private val user: User) : BottomSheetDialogFragment() {
             putString(KEY_USER_ID, user.id)
         }
         parentFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, fragment)
+            .replace(R.id.fragment_container, fragment)
             .addToBackStack(null)
             .commit()
     }

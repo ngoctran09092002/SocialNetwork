@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.example.socialn.core.interfaces.IUserRepository
+import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.R
 import com.example.socialnetwork.core.models.User
 import com.example.socialnetwork.firebase.FirebaseUserRepository

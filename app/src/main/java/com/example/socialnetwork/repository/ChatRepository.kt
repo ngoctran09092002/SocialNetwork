@@ -6,37 +6,43 @@ import com.google.firebase.database.*
 
 class ChatRepositoryImpl : IChatRepository {
 
-    // Reference tới node "chats" trong Firebase Realtime Database
     private val dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("chats")
+    private var activeListener: ChildEventListener? = null
+    private var activeRef: Query? = null
 
-    /**
-     * Lắng nghe tin nhắn mới theo chatRoomId (ví dụ chatId = senderId_receiverId)
-     */
     override fun observeMessages(chatRoomId: String, onNewMessage: (Message) -> Unit) {
-        dbRef.child(chatRoomId).child("messages")
-            .addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                    val msg = snapshot.getValue(Message::class.java)
-                    msg?.let { onNewMessage(it) }
-                }
+        removeListener()
 
-                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-                override fun onChildRemoved(snapshot: DataSnapshot) {}
-                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-                override fun onCancelled(error: DatabaseError) {}
-            })
+        val ref = dbRef.child(chatRoomId).child("messages")
+            .orderByChild("timestamp")
+
+        val listener = object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                snapshot.getValue(Message::class.java)?.let { onNewMessage(it) }
+            }
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        }
+
+        activeRef = ref
+        activeListener = listener
+        ref.addChildEventListener(listener)
     }
 
-    /**
-     * Gửi tin nhắn Message lên Firebase
-     */
     override fun sendMessage(message: Message) {
-        // Tạo chatId duy nhất dựa trên senderId và receiverId
         val chatId = if (message.senderId < message.receiverId)
             "${message.senderId}_${message.receiverId}"
         else
             "${message.receiverId}_${message.senderId}"
 
         dbRef.child(chatId).child("messages").push().setValue(message)
+    }
+
+    override fun removeListener() {
+        activeListener?.let { activeRef?.removeEventListener(it) }
+        activeListener = null
+        activeRef = null
     }
 }

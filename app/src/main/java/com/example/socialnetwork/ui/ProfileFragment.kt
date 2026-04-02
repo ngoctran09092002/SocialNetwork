@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
-import com.example.socialn.core.interfaces.IAuthService
-import com.example.socialn.core.interfaces.IUserRepository
+import com.example.socialnetwork.core.interfaces.IAuthService
+import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.core.models.User
 import com.example.socialnetwork.firebase.FirebaseAuthService
 import com.example.socialnetwork.firebase.FirebaseUserRepository
