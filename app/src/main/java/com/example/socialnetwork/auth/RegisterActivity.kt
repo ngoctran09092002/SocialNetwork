@@ -1,7 +1,16 @@
 package com.example.socialnetwork.auth
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.Patterns
 import android.view.View
 import android.widget.*
@@ -47,11 +56,7 @@ class RegisterActivity : AppCompatActivity() {
         btnRegister.setOnClickListener {
             performRegistration()
         }
-
-        // 4. Quay lại màn hình Đăng nhập
-        tvToLogin.setOnClickListener {
-            finish() // Đóng Activity này để quay lại LoginActivity
-        }
+        setupSignInLink()
     }
 
     private fun initViews() {
@@ -66,6 +71,35 @@ class RegisterActivity : AppCompatActivity() {
         tilEmail = findViewById(R.id.tilRegEmail)
         tilPass = findViewById(R.id.tilRegPassword)
         tilConfirmPass = findViewById(R.id.tilRegConfirmPassword)
+    }
+
+    private fun setupSignInLink() {
+        val fullText = "Already have an account? Sign In"
+        val spannable = SpannableString(fullText)
+        val start = fullText.indexOf("Sign In")
+        val end = start + "Sign In".length
+
+        if (start != -1) {
+            spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            spannable.setSpan(ForegroundColorSpan(Color.WHITE), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            val clickableSpan = object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    finish() // Quay lại LoginActivity
+                }
+
+                override fun updateDrawState(ds: TextPaint) {
+                    super.updateDrawState(ds)
+                    ds.isUnderlineText = false // Tắt gạch chân
+                }
+            }
+            spannable.setSpan(clickableSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        // Gán vào TextView
+        tvToLogin.text = spannable
+        tvToLogin.movementMethod = LinkMovementMethod.getInstance()
+        tvToLogin.highlightColor = Color.TRANSPARENT
     }
 
     private fun performRegistration() {
