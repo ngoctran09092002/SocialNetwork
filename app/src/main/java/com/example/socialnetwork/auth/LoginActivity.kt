@@ -1,7 +1,16 @@
 package com.example.socialnetwork.auth
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.Patterns
 import android.view.View
 import android.widget.*
@@ -38,12 +47,38 @@ class LoginActivity : AppCompatActivity() {
         btnLogin.setOnClickListener {
             validateAndLogin()
         }
+        setupSignUpLink()
+    }
 
-        tvToRegister.setOnClickListener {
-            // Chuyển sang màn hình Đăng ký
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
+    private fun setupSignUpLink() {
+        val fullText = "Don't have an account? Sign Up"
+        val spannable = SpannableString(fullText)
+        val start = fullText.indexOf("Sign Up")
+        val end = start + "Sign Up".length
+
+        if (start != -1) {
+            spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            spannable.setSpan(ForegroundColorSpan(Color.WHITE), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            //Tạo sự kiện Click cho "Sign Up"
+            val clickableSpan = object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    val intent = Intent(this@LoginActivity, RegisterActivity::class.java)
+                    startActivity(intent)
+                }
+
+                override fun updateDrawState(ds: TextPaint) {
+                    super.updateDrawState(ds)
+                    ds.isUnderlineText = false // Tắt gạch chân
+                }
+            }
+            spannable.setSpan(clickableSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
+
+        // Gán vào TextView
+        tvToRegister.text = spannable
+        tvToRegister.movementMethod = LinkMovementMethod.getInstance()
+        tvToRegister.highlightColor = Color.TRANSPARENT
     }
 
     // 4. HÀM KIỂM TRA DỮ LIỆU VÀ ĐĂNG NHẬP
