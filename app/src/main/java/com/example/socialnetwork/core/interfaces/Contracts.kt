@@ -29,6 +29,7 @@ interface IFeedRepository {
 interface IChatRepository {
     fun observeMessages(chatRoomId: String, onNewMessage: (Message) -> Unit)
     fun sendMessage(message: Message)
+    fun removeListener()
 }
 
 // Node 5 (Profile) implement.

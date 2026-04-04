@@ -1,22 +1,21 @@
-
 {
   "project_info": {
-    "project_number": "178298228418",
-    "project_id": "my-social-network-project-and",
-    "storage_bucket": "my-social-network-project-and.firebasestorage.app"
+    "project_number": "760187401019",
+    "project_id": "androi-2-410ab",
+    "storage_bucket": "androi-2-410ab.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:178298228418:android:ad88b32b33ee1328da755b",
+        "mobilesdk_app_id": "1:760187401019:android:b35add574c95d8caa93d1e",
         "android_client_info": {
-          "package_name": "com.example.socialnetwork"
+          "package_name": "social123.oshi"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDAlY6GHpc0rPyp4WD7qMnt9Fw5nOpTxIc"
+          "current_key": "AIzaSyAB-7fPY_WcER19SQKygF5tMANGF6g36us"
         }
       ],
       "services": {
