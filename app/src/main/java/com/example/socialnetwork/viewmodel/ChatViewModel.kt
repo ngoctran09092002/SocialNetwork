@@ -1,5 +1,6 @@
 package com.example.socialnetwork.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,7 +22,7 @@ class ChatViewModel : ViewModel() {
 
         val chatRoomId = if (senderId < receiverId) "${senderId}_${receiverId}"
         else "${receiverId}_${senderId}"
-
+        Log.d("CHAT_DEBUG", "OBSERVE chatId: $chatRoomId")
         repository.observeMessages(chatRoomId) { newMessage ->
             val updated = _messages.value.orEmpty().toMutableList()
             updated.add(newMessage)
@@ -30,6 +31,7 @@ class ChatViewModel : ViewModel() {
     }
 
     fun sendMessage(content: String, senderId: String, receiverId: String) {
+        Log.d("CHAT_DEBUG", "senderId: $senderId")
         if (content.isBlank()) return
         val message = Message(
             senderId = senderId,
@@ -39,6 +41,7 @@ class ChatViewModel : ViewModel() {
         )
         repository.sendMessage(message)
     }
+
 
     override fun onCleared() {
         super.onCleared()

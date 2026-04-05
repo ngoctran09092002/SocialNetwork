@@ -28,6 +28,10 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".feed.ui.FeedActivity"
             android:exported="true"/>
+        <activity
+            android:name=".ui.ChatActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"
+            android:exported="true" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -37,9 +41,9 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <activity
-            android:name=".ui.ChatActivity"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".ui.ChatActivity"-->
+<!--            android:exported="false" />-->
 
 
     </application>

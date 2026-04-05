@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -63,8 +64,9 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Lấy danh sách người dùng thất bại", Toast.LENGTH_SHORT).show()
                 }
-            }
+                }
         }
     }
 }
