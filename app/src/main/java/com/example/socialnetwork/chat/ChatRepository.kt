@@ -1,6 +1,5 @@
-package com.example.socialnetwork.repository
+package com.example.socialnetwork.chat
 
-import android.util.Log
 import com.example.socialnetwork.core.models.Message
 import com.example.socialnetwork.core.interfaces.IChatRepository
 import com.google.firebase.database.*
@@ -43,14 +42,14 @@ class ChatRepositoryImpl : IChatRepository {
         activeListener = listener
         ref.addChildEventListener(listener)
     }
-override fun sendMessage(message: Message) {
-    val chatId = if (message.senderId < message.receiverId)
-        "${message.senderId}_${message.receiverId}"
-    else
-        "${message.receiverId}_${message.senderId}"
+    override fun sendMessage(message: Message) {
+        val chatId = if (message.senderId < message.receiverId)
+            "${message.senderId}_${message.receiverId}"
+        else
+            "${message.receiverId}_${message.senderId}"
 
-    dbRef.child(chatId).child("messages").push().setValue(message)
-}
+        dbRef.child(chatId).child("messages").push().setValue(message)
+    }
 
     override fun removeListener() {
         activeListener?.let { activeRef?.removeEventListener(it) }

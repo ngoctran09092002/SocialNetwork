@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
 import com.example.socialnetwork.core.models.Message
-import com.example.socialnetwork.viewmodel.ChatViewModel
+import com.example.socialnetwork.chat.ChatViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 class ChatActivity : AppCompatActivity() {
@@ -23,7 +23,7 @@ class ChatActivity : AppCompatActivity() {
     private val viewModel: ChatViewModel by viewModels()
     private lateinit var chatAdapter: ChatAdapter
 
-    // ✅ Global UID
+    // Global UID
     private var uid: String = ""
 
     // Lấy receiver info từ Intent (sẽ pass từ danh sách chat)
@@ -36,7 +36,7 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        // 👉 Setup UI Toolbar
+        //  Setup UI Toolbar
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
         findViewById<TextView>(R.id.tvReceiverName).text = receiverName
         val imgAvatar = findViewById<ImageView>(R.id.imgReceiverAvatar)
@@ -44,7 +44,7 @@ class ChatActivity : AppCompatActivity() {
             Glide.with(this).load(receiverAvatar).circleCrop().into(imgAvatar)
         }
 
-        // 👉 Firebase Auth
+        //  Firebase Auth
         val auth = FirebaseAuth.getInstance()
 
         if (auth.currentUser == null) {
@@ -68,7 +68,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initChat() {
-        // ✅ Check an toàn
+        // Check an toàn
         if (uid.isEmpty()) {
             Log.e("CHAT", "UID chưa sẵn sàng")
             return
@@ -79,7 +79,7 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
-        // 👉 Bắt đầu nghe tin nhắn
+        // Bắt đầu nghe tin nhắn
         viewModel.startObservingMessages(uid, receiverId)
 
         val rvChat = findViewById<RecyclerView>(R.id.rvChat)
@@ -96,7 +96,7 @@ class ChatActivity : AppCompatActivity() {
         rvChat.layoutManager = layoutManager
         rvChat.adapter = chatAdapter
 
-        // 👉 Observe messages từ ViewModel
+        //  Observe messages từ ViewModel
         viewModel.messages.observe(this) { list ->
             chatAdapter.messages = list.toMutableList()
             chatAdapter.notifyDataSetChanged()
@@ -105,7 +105,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-        // 👉 Nút gửi
+        //  Nút gửi
         btnSend.setOnClickListener {
             if (uid.isEmpty()) {
                 Log.e("SEND", "UID chưa sẵn sàng")

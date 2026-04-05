@@ -1,4 +1,4 @@
-package com.example.socialnetwork.feed
+package com.example.socialnetwork.chat
 
 import android.content.Intent
 import android.os.Bundle
