@@ -36,6 +36,21 @@ class FeedRepository : IFeedRepository {
         }
     }
 
+    //  Node 5 thêm vào
+    suspend fun getPostsByUser(userId: String): List<Post> {
+        return try {
+            val snapshot = db.collection("posts")
+                .whereEqualTo("authorId", userId)
+//                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            snapshot.toObjects(Post::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     override suspend fun createPost(post: Post): Boolean {
         return try {
             Log.d(TAG, "Creating post: ${post.id}")

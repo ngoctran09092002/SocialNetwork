@@ -180,16 +180,16 @@ class PostAdapter(
         }
     }
 
-    fun updatePostLikeCount(postId: String, newLikeCount: Int) {
-        val position = posts.indexOfFirst { it.id == postId }
-        if (position != -1) {
-            val updatedPost = posts[position].copy(likesCount = newLikeCount)
-            posts = posts.toMutableList().apply {
-                this[position] = updatedPost
-            }
-            notifyItemChanged(position)
-        }
-    }
+//    fun updatePostLikeCount(postId: String, newLikeCount: Int) {
+//        val position = posts.indexOfFirst { it.id == postId }
+//        if (position != -1) {
+//            val updatedPost = posts[position].copy(likesCount = newLikeCount)
+//            posts = posts.toMutableList().apply {
+//                this[position] = updatedPost
+//            }
+//            notifyItemChanged(position)
+//        }
+//    }
 
     fun getPosts(): List<Post> = posts
 

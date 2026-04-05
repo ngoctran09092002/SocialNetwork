@@ -10,6 +10,7 @@ class FirebaseUserRepository : IUserRepository {
 
     private val db = FirebaseFirestore.getInstance()
     private val usersRef = db.collection("users")
+    private val postsRef = db.collection("posts")
 
     override suspend fun getUserProfile(userId: String): User? {
         return try {
@@ -18,12 +19,9 @@ class FirebaseUserRepository : IUserRepository {
             Log.d("FIREBASE", "doc exists: ${doc.exists()}")
             Log.d("FIREBASE", "data: ${doc.data}")
 
-            val userWithoutId = doc.toObject(User::class.java)
-            if (userWithoutId != null) {
-                userWithoutId.copy(id = doc.id)
-            } else {
-                null
-            }
+            val user = doc.toObject(User::class.java)
+            user?.copy(id = doc.id)
+
         } catch (e: Exception) {
             Log.e("FIREBASE", "error", e)
             null
@@ -32,10 +30,13 @@ class FirebaseUserRepository : IUserRepository {
 
     override suspend fun searchUsers(query: String): List<User> {
         if (query.isBlank()) return emptyList()
+
         return try {
             val snapshot = usersRef.get().await()
-            snapshot.documents.mapNotNull { it.toObject(User::class.java)?.copy(id = it.id) }
+            snapshot.documents
+                .mapNotNull { it.toObject(User::class.java)?.copy(id = it.id) }
                 .filter { it.name.contains(query, ignoreCase = true) }
+
         } catch (e: Exception) {
             Log.e("FIREBASE", "search error", e)
             emptyList()
@@ -45,7 +46,9 @@ class FirebaseUserRepository : IUserRepository {
     suspend fun getAllUsers(): List<User> {
         return try {
             val snapshot = usersRef.get().await()
-            snapshot.documents.mapNotNull { it.toObject(User::class.java)?.copy(id = it.id) }
+            snapshot.documents.mapNotNull {
+                it.toObject(User::class.java)?.copy(id = it.id)
+            }
         } catch (e: Exception) {
             Log.e("FIREBASE", "getAllUsers error", e)
             emptyList()
@@ -58,5 +61,23 @@ class FirebaseUserRepository : IUserRepository {
         } catch (e: Exception) {
             Log.e("FIREBASE", "updateUser error", e)
         }
+    }
+
+    override suspend fun getUserPostCount(userId: String): Int {
+        return try {
+            val snapshot = postsRef
+                .whereEqualTo("authorId", userId)
+                .get()
+                .await()
+
+            snapshot.size()
+        } catch (e: Exception) {
+            Log.e("FIREBASE", "postCount error", e)
+            0
+        }
+    }
+
+    override suspend fun getFriendCount(userId: String): Int {
+        return 0
     }
 }
