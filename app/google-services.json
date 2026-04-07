@@ -2,6 +2,10 @@
 {
   "project_info": {
     "project_number": "178298228418",
+<<<<<<< Updated upstream
+=======
+    "firebase_url": "https://my-social-network-project-and-default-rtdb.firebaseio.com",
+>>>>>>> Stashed changes
     "project_id": "my-social-network-project-and",
     "storage_bucket": "my-social-network-project-and.firebasestorage.app"
   },
