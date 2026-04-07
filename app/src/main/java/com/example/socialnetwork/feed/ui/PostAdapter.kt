@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.text.clear
 
 class PostAdapter(
     private var posts: List<Post> = emptyList(),
@@ -180,16 +181,21 @@ class PostAdapter(
         }
     }
 
-//    fun updatePostLikeCount(postId: String, newLikeCount: Int) {
-//        val position = posts.indexOfFirst { it.id == postId }
-//        if (position != -1) {
-//            val updatedPost = posts[position].copy(likesCount = newLikeCount)
-//            posts = posts.toMutableList().apply {
-//                this[position] = updatedPost
-//            }
-//            notifyItemChanged(position)
-//        }
-//    }
+    fun updatePostLikeCount(postId: String, newLikeCount: Int) {
+        val position = posts.indexOfFirst { it.id == postId }
+        if (position != -1) {
+            val updatedPost = posts[position].copy(likesCount = newLikeCount)
+            posts = posts.toMutableList().apply {
+                this[position] = updatedPost
+            }
+            notifyItemChanged(position)
+        }
+    }
+
+    fun clearUserCache() {
+        userCache.clear()
+        notifyDataSetChanged()
+    }
 
     fun getPosts(): List<Post> = posts
 

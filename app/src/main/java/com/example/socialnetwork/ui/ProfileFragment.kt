@@ -6,14 +6,17 @@ import android.view.View
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
-import com.example.socialnetwork.core.interfaces.*
+import com.example.socialnetwork.core.interfaces.IAuthService
+import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.core.models.User
 import com.example.socialnetwork.features.feed.repository.FeedRepository
 import com.example.socialnetwork.feed.ui.PostAdapter
-import com.example.socialnetwork.firebase.*
+import com.example.socialnetwork.firebase.FirebaseAuthService
+import com.example.socialnetwork.firebase.FirebaseUserRepository
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -115,7 +118,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
             listener = object : EditProfileDialog.OnProfileUpdatedListener {
                 override fun onProfileUpdated(user: User) {
-                    loadProfile(user.id)
+                    val postCount = tvPostCount.text.toString().toIntOrNull() ?: 0
+                    val friendCount = tvFriendCount.text.toString().toIntOrNull() ?: 0
+                    setProfile(user, postCount, friendCount)
+                    postAdapter.clearUserCache()
                 }
             }
         }
