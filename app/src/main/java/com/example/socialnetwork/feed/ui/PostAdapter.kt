@@ -19,7 +19,6 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.text.clear
 
 class PostAdapter(
     private var posts: List<Post> = emptyList(),
@@ -194,11 +193,6 @@ class PostAdapter(
             }
             notifyItemChanged(position)
         }
-    }
-
-    fun clearUserCache() {
-        userCache.clear()
-        notifyDataSetChanged()
     }
 
     fun clearUserCache() {

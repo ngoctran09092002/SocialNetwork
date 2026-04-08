@@ -8,6 +8,7 @@
     {
       "client_info": {
         "mobilesdk_app_id": "1:178298228418:android:ad88b32b33ee1328da755b",
+        "firebase_url": "https://my-social-network-project-and-default-rtdb.firebaseio.com",
         "android_client_info": {
           "package_name": "com.example.socialnetwork"
         }

@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.socialnetwork.core.models.Comment
 import com.example.socialnetwork.core.models.Post
 import com.example.socialnetwork.features.feed.repository.FeedRepository
 import com.google.firebase.firestore.FirebaseFirestore
