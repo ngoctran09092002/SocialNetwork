@@ -16,6 +16,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class PostAdapter(
     private var posts: List<Post> = emptyList(),
@@ -36,6 +39,7 @@ class PostAdapter(
         val btnComment: ImageButton = view.findViewById(R.id.btnComment)
         val txtUserName: TextView = view.findViewById(R.id.txtUserName)
         val imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
+        val txtPostTime : TextView = view.findViewById(R.id.txtPostTime)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -47,7 +51,7 @@ class PostAdapter(
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
         val isLiked = likedPosts.contains(post.id)
-
+        holder.txtPostTime.text = formatTimestamp(post.timestamp)
         holder.txtCaption.text = post.caption
         holder.txtLikeCount.text = formatCount(post.likesCount, "like")
         holder.txtCommentCount.text = formatCount(post.commentCount, "comment")
@@ -186,6 +190,18 @@ class PostAdapter(
         }
     }
 
+    private fun formatTimestamp(timestamp: Long): String {
+        val date = Date(timestamp)
+        val now = Date()
+        val diff = now.time - timestamp
+
+        return when {
+            diff < 60000 -> "Just now"
+            diff < 3600000 -> "${diff / 60000} minutes ago"
+            diff < 86400000 -> "${diff / 3600000} hours ago"
+            else -> SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(date)
+        }
+    }
     fun getPosts(): List<Post> = posts
 
     override fun getItemCount(): Int = posts.size

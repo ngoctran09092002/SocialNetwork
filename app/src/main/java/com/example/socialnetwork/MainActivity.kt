@@ -16,6 +16,9 @@ import com.example.socialnetwork.feed.FeedFragment
 import com.example.socialnetwork.feed.PostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.socialnetwork.ui.ChatActivity
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import com.example.socialnetwork.media.MediaTestFragment
 

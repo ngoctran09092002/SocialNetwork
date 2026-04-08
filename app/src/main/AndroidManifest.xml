@@ -31,6 +31,9 @@
         <activity android:name=".auth.LoginActivity" />
         <activity android:name=".auth.RegisterActivity" />
         <activity android:name=".MainActivity" />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         <provider
             android:name="androidx.core.content.FileProvider"
