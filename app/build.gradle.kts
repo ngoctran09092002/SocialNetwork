@@ -2,22 +2,26 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
     namespace = "com.example.socialnetwork"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.socialnetwork"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    buildFeatures {
+        viewBinding = true
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -36,15 +40,10 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
+
 dependencies {
-<<<<<<< Updated upstream
-=======
     // Import Bom (Bill of Materials) để quản lý phiên bản dễ dàng hơn
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
@@ -68,15 +67,16 @@ dependencies {
 
     // Tooling để debug (chỉ chạy trên máy ảo/máy thật khi debug)
     debugImplementation("androidx.compose.ui:ui-tooling")
->>>>>>> Stashed changes
+
     // Firebase BOM để đồng bộ version
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
 
     // Firebase core services
     implementation("com.google.firebase:firebase-auth")        // Authentication
     implementation("com.google.firebase:firebase-firestore")   // Cloud Firestore
     implementation("com.google.firebase:firebase-database")    // Realtime Database
-    implementation("com.google.firebase:firebase-storage")     // Cloud Storage
+    implementation("com.google.firebase:firebase-storage")  // Cloud Storage
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
     //implementation("com.google.firebase:firebase-auth-ktx")        // Authentication
     //implementation("com.google.firebase:firebase-firestore-ktx")   // Cloud Firestore
     //implementation("com.google.firebase:firebase-database-ktx")    // Realtime Database

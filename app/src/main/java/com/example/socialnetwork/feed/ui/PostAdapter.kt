@@ -65,13 +65,6 @@ class PostAdapter(
 
         updateLikeButton(holder.btnLike, isLiked)
 
-<<<<<<< Updated upstream
-        Glide.with(holder.itemView.context)
-            .load(post.imageUrl)
-            .placeholder(R.drawable.ic_launcher_background)
-            .error(R.drawable.ic_launcher_background)
-            .into(holder.imgPost)
-=======
         // Hiển thị ảnh post
         if (post.imageUrl.isNullOrEmpty()) {
             holder.imgPost.visibility = View.GONE
@@ -83,7 +76,6 @@ class PostAdapter(
                 .error(R.color.bg_screen)
                 .into(holder.imgPost)
         }
->>>>>>> Stashed changes
 
         loadUserInfo(holder, post.authorId)
 
@@ -129,8 +121,8 @@ class PostAdapter(
             holder.txtUserName.text = name
             Glide.with(holder.itemView.context)
                 .load(avatarUrl)
-                .placeholder(R.drawable.ic_launcher_background)
-                .error(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.profile)
+                .error(R.drawable.profile)
                 .circleCrop()
                 .into(holder.imgAvatar)
             return
@@ -236,14 +228,12 @@ class PostAdapter(
         }
     }
 
-<<<<<<< Updated upstream
-=======
     fun clearUserCache() {
         userCache.clear()
         notifyDataSetChanged()
     }
 
->>>>>>> Stashed changes
+
     private fun formatTimestamp(timestamp: Long): String {
         val date = Date(timestamp)
         val now = Date()

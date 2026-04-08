@@ -4,84 +4,95 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@color/bg_surface">
 
     <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp"
+        android:background="@color/bg_surface"
+        android:elevation="2dp">
 
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Comments"
+            android:text="Bình luận"
+            android:textColor="@color/text_primary"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/btnClose"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:src="@drawable/ic_close"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="4dp"
-            android:tint="@android:color/darker_gray" />
+            android:padding="6dp"
+            android:tint="@color/text_secondary" />
 
     </LinearLayout>
 
-    <!-- Post Preview -->
+    <!-- Post preview strip -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="#F5F5F5"
-        android:layout_marginBottom="8dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@color/bg_screen">
 
         <ImageView
             android:id="@+id/imgPostPreview"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background"
-            app:circleCrop="true" />
+            android:clipToOutline="true"
+            android:background="@drawable/circle_bg"
+            android:src="@drawable/ic_launcher_background" />
 
         <TextView
             android:id="@+id/tvPostCaption"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:textSize="14sp"
-            android:textColor="#666666"
+            android:layout_marginStart="10dp"
+            android:layout_gravity="center_vertical"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
             android:maxLines="2"
             android:ellipsize="end" />
 
     </LinearLayout>
 
-    <!-- Comments List -->
+    <!-- Comments list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerComments"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
 
-    <!-- Comment Input -->
+    <!-- Input bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="@android:color/white"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@color/bg_surface"
         android:elevation="4dp">
 
         <EditText
@@ -89,21 +100,28 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Write a comment..."
-            android:padding="12dp"
-            android:background="@drawable/bg_comment_input"
-            android:maxLines="5"
-            android:inputType="textMultiLine" />
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_input"
+            android:hint="Viết bình luận..."
+            android:textColorHint="@color/text_hint"
+            android:inputType="textMultiLine"
+            android:maxLines="4"
+            android:minHeight="44dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
 
         <ImageButton
             android:id="@+id/btnSend"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_send_btn"
             android:src="@drawable/ic_send"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:enabled="false"
-            android:tint="@color/gray" />
+            android:tint="@color/white"
+            android:padding="10dp" />
 
     </LinearLayout>
 
@@ -112,6 +130,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/primary" />
 
 </LinearLayout>

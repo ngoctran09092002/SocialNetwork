@@ -1,4 +1,4 @@
-package com.example.socialn.core.interfaces
+package com.example.socialnetwork.core.interfaces
 
 import com.example.socialnetwork.core.models.Comment
 import com.example.socialnetwork.core.models.Post
@@ -29,16 +29,14 @@ interface IFeedRepository {
 interface IChatRepository {
     fun observeMessages(chatRoomId: String, onNewMessage: (Message) -> Unit)
     fun sendMessage(message: Message)
+    fun removeListener()
 }
 
 // Node 5 (Profile) implement.
 interface IUserRepository {
     suspend fun getUserProfile(userId: String): User?
     suspend fun searchUsers(query: String): List<User>
-<<<<<<< Updated upstream
-=======
     suspend fun getUserPostCount(userId: String): Int
     suspend fun getFriendCount(userId: String): Int
     suspend fun updateUser(user: User): Boolean
->>>>>>> Stashed changes
 }

@@ -1,7 +1,7 @@
 package com.example.socialnetwork.features.feed.repository
 
 import android.util.Log
-import com.example.socialn.core.interfaces.IFeedRepository
+import com.example.socialnetwork.core.interfaces.IFeedRepository
 import com.example.socialnetwork.core.models.Comment
 import com.example.socialnetwork.core.models.Post
 import com.google.firebase.firestore.FieldValue
@@ -32,6 +32,21 @@ class FeedRepository : IFeedRepository {
             posts
         } catch (e: Exception) {
             Log.e(TAG, "Error loading posts: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    //  Node 5 thêm vào
+    suspend fun getPostsByUser(userId: String): List<Post> {
+        return try {
+            val snapshot = db.collection("posts")
+                .whereEqualTo("authorId", userId)
+//                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            snapshot.toObjects(Post::class.java)
+        } catch (e: Exception) {
             emptyList()
         }
     }
