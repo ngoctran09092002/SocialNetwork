@@ -98,42 +98,4 @@ class FeedViewModel(
         }
     }
 
-    fun addComment(postId: String, commentText: String) {
-        if (commentText.isBlank()) return
-
-        viewModelScope.launch {
-            try {
-                val db = FirebaseFirestore.getInstance()
-                val userDoc = db.collection("users").document(currentUserId).get().await()
-                val username = userDoc.getString("name") ?: "User"
-                val avatarUrl = userDoc.getString("avatarUrl") ?: ""
-
-                val comment = Comment(
-                    postId = postId,
-                    userId = currentUserId,
-                    username = username,
-                    avatarUrl = avatarUrl,
-                    content = commentText,
-                    timestamp = System.currentTimeMillis()
-                )
-
-                feedRepository.addComment(postId, comment)
-
-                // Update local post list
-                _posts.value?.let { currentPosts ->
-                    val updatedPosts = currentPosts.map { post ->
-                        if (post.id == postId) {
-                            post.copy(commentCount = post.commentCount + 1)
-                        } else {
-                            post
-                        }
-                    }
-                    _posts.value = updatedPosts
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error adding comment: ${e.message}", e)
-                _error.value = "Failed to add comment"
-            }
-        }
-    }
 }

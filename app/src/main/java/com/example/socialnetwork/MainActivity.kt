@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+<<<<<<< Updated upstream
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.ui.ProfileFragment
 import com.example.socialnetwork.ui.SearchFragment
@@ -12,7 +13,19 @@ import com.example.socialnetwork.feed.FeedFragment
 import com.example.socialnetwork.feed.PostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.socialnetwork.ui.ChatActivity
-import com.example.socialnetwork.feed.ui.FeedActivity
+=======
+import androidx.fragment.app.Fragment
+import com.example.socialnetwork.ui.ProfileFragment
+import com.example.socialnetwork.ui.SearchFragment
+import com.example.socialnetwork.feed.ChatListFragment
+import com.example.socialnetwork.feed.FeedFragment
+import com.example.socialnetwork.feed.PostFragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialnetwork.ui.ChatActivity
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 import com.example.socialnetwork.media.MediaTestFragment
 
 class MainActivity : AppCompatActivity() {

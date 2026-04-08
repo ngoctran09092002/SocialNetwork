@@ -26,8 +26,7 @@
         <activity android:name=".auth.LoginActivity" />
         <activity android:name=".auth.RegisterActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".feed.ui.FeedActivity"
-            android:exported="true"/>
+    
         <activity
             android:name=".ui.ChatActivity"
             android:windowSoftInputMode="stateVisible|adjustResize"
