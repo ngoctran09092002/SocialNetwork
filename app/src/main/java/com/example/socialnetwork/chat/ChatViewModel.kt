@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.socialnetwork.core.models.Message
+import com.example.socialnetwork.repository.ChatRepositoryImpl
 
 class ChatViewModel : ViewModel() {
 
