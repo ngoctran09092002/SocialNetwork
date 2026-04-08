@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header: Avatar + Name + Time -->
+        <!-- Header: Avatar + Name + Time + Menu -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,10 +53,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:text="vừa xong" />
+                    android:textSize="12sp" />
 
             </LinearLayout>
+
+            <!-- Nút 3 chấm để xóa post -->
+            <ImageButton
+                android:id="@+id/btnDeletePost"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_menu"
+                android:visibility="gone"
+                android:padding="8dp" />
 
         </LinearLayout>
 

@@ -38,4 +38,5 @@ interface IUserRepository {
     suspend fun searchUsers(query: String): List<User>
     suspend fun getUserPostCount(userId: String): Int
     suspend fun getFriendCount(userId: String): Int
+    suspend fun updateUser(user: User): Boolean
 }

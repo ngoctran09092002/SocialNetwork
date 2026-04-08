@@ -55,11 +55,22 @@ class FirebaseUserRepository : IUserRepository {
         }
     }
 
-    suspend fun updateUser(user: User) {
-        try {
-            usersRef.document(user.id).set(user).await()
+    override suspend fun updateUser(user: User): Boolean {
+        return try {
+            val userMap = hashMapOf(
+                "name" to user.name,
+                "bio" to user.bio,
+                "avatarUrl" to user.avatarUrl
+            )
+
+            db.collection("users")
+                .document(user.id)
+                .update(userMap as Map<String, Any>)
+                .await()
+            true
         } catch (e: Exception) {
-            Log.e("FIREBASE", "updateUser error", e)
+            Log.e("FirebaseUserRepository", "Error updating user: ${e.message}", e)
+            false
         }
     }
 

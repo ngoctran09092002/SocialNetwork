@@ -25,7 +25,6 @@ class FeedFragment : Fragment(R.layout.fragment_feed) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Lấy currentUserId từ Firebase Auth
         currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "testUser"
 
         initViews(view)
@@ -56,10 +55,17 @@ class FeedFragment : Fragment(R.layout.fragment_feed) {
             onCommentClick = { post ->
                 openCommentDialog(post)
             },
+            onDeletePost = { post, position ->
+                deletePost(post, position)
+            },
             currentUserId = currentUserId
         )
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
+    }
+
+    private fun deletePost(post: Post, position: Int) {
+        viewModel.deletePost(post.id, position)
     }
 
     private fun openCommentDialog(post: Post) {
@@ -105,6 +111,13 @@ class FeedFragment : Fragment(R.layout.fragment_feed) {
 
         viewModel.likeStateChanged.observe(viewLifecycleOwner) { (postId, isLiked) ->
             adapter.updateLikeState(postId, isLiked)
+        }
+
+        viewModel.postDeleted.observe(viewLifecycleOwner) { (postId, position) ->
+            if (postId != null && position != null) {
+                adapter.removePost(position)
+                Toast.makeText(requireContext(), "Đã xóa bài viết", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

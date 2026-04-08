@@ -151,9 +151,9 @@ class CommentDialog : BottomSheetDialogFragment() {
 
     private fun showDeleteConfirmation(comment: Comment) {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Delete Comment")
-            .setMessage("Are you sure you want to delete this comment?")
-            .setPositiveButton("Delete") { _, _ ->
+            .setTitle("Xác nhận xóa")
+            .setMessage("Chắc chắn muốn xóa?")
+            .setPositiveButton("Xóa") { _, _ ->
                 val commentId = comment.id
                 if (commentId.isNotEmpty()) {
                     viewModel.deleteComment(
@@ -165,7 +165,7 @@ class CommentDialog : BottomSheetDialogFragment() {
                     )
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Hủy", null)
             .show()
     }
 
@@ -196,7 +196,7 @@ class CommentDialog : BottomSheetDialogFragment() {
         return try {
             val db = FirebaseFirestore.getInstance()
             val userDoc = db.collection("users").document(currentUserId).get().await()
-            val username = userDoc.getString("username") ?: "User"
+            val username = userDoc.getString("name") ?: "User"
             val avatarUrl = userDoc.getString("avatarUrl") ?: ""
             Pair(username, avatarUrl)
         } catch (e: Exception) {
@@ -212,7 +212,7 @@ class CommentDialog : BottomSheetDialogFragment() {
 
             // Update comment count in title
             val count = newComments.size
-            tvTitle.text = "Comments ($count)"
+            tvTitle.text = "Bình luận ($count)"
 
             // Notify parent about comment count change
             onCommentCountChanged?.invoke(count)

@@ -10,6 +10,7 @@ import com.example.socialnetwork.feed.FeedFragment
 import com.example.socialnetwork.feed.PostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
+
 class MainActivity : AppCompatActivity() {
 
 

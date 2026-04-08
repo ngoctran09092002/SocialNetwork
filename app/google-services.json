@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "178298228418",
+    "firebase_url": "https://my-social-network-project-and-default-rtdb.firebaseio.com",
     "project_id": "my-social-network-project-and",
     "storage_bucket": "my-social-network-project-and.firebasestorage.app"
   },
@@ -8,7 +9,6 @@
     {
       "client_info": {
         "mobilesdk_app_id": "1:178298228418:android:ad88b32b33ee1328da755b",
-        "firebase_url": "https://my-social-network-project-and-default-rtdb.firebaseio.com",
         "android_client_info": {
           "package_name": "com.example.socialnetwork"
         }
