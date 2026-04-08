@@ -1,5 +1,6 @@
 package com.example.socialnetwork.ui
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +11,17 @@ import com.example.socialnetwork.core.models.Message
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ChatAdapter(private val myId: String) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ChatAdapter(
+    private val myId: String,
+    private val onDeleteLocally: (Message) -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val TYPE_SENT = 1
-    private val TYPE_RECEIVED = 2
-    var messages = mutableListOf<Message>()
+    companion object {
+        private const val TYPE_SENT = 1
+        private const val TYPE_RECEIVED = 2
+    }
+
+    private val messages = mutableListOf<Message>()
 
     override fun getItemViewType(position: Int): Int {
         return if (messages[position].senderId == myId) TYPE_SENT else TYPE_RECEIVED
@@ -22,10 +29,12 @@ class ChatAdapter(private val myId: String) : RecyclerView.Adapter<RecyclerView.
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_SENT) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_sent, parent, false)
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_chat_sent, parent, false)
             SentViewHolder(view)
         } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_received, parent, false)
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_chat_received, parent, false)
             ReceivedViewHolder(view)
         }
     }
@@ -37,14 +46,21 @@ class ChatAdapter(private val myId: String) : RecyclerView.Adapter<RecyclerView.
         if (holder is SentViewHolder) {
             holder.tvMsg.text = message.content
             holder.tvTime.text = time
+            holder.itemView.setOnLongClickListener {
+                showDeleteDialog(holder.itemView, message)
+                true
+            }
         } else if (holder is ReceivedViewHolder) {
             holder.tvMsg.text = message.content
             holder.tvTime.text = time
+            holder.itemView.setOnLongClickListener {
+                showDeleteDialog(holder.itemView, message)
+                true
+            }
         }
     }
 
-    override fun getItemCount() = messages.size
-
+    override fun getItemCount(): Int = messages.size
     class SentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMsg: TextView = view.findViewById(R.id.tvMessageSent)
         val tvTime: TextView = view.findViewById(R.id.tvTimeSent)
@@ -53,5 +69,22 @@ class ChatAdapter(private val myId: String) : RecyclerView.Adapter<RecyclerView.
     class ReceivedViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMsg: TextView = view.findViewById(R.id.tvMessageReceived)
         val tvTime: TextView = view.findViewById(R.id.tvTimeReceived)
+    }
+
+    fun updateMessages(newMessages: List<Message>) {
+        messages.clear()
+        messages.addAll(newMessages)
+        notifyDataSetChanged()
+    }
+    private fun showDeleteDialog(view: View, message: Message) {
+        AlertDialog.Builder(view.context)
+            .setTitle("Xóa tin nhắn")
+            .setMessage("Bạn có chắc muốn xóa tin nhắn này không?")
+            .setPositiveButton("Xóa") { dialog, _ ->
+                onDeleteLocally(message)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Hủy") { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 }

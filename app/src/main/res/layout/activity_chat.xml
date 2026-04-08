@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/bg_screen"
-    android:fitsSystemWindows="true">
+   >
 
     <!-- Toolbar with avatar + name + status -->
     <LinearLayout
@@ -19,8 +19,8 @@
         android:paddingStart="4dp"
         android:paddingEnd="12dp"
         android:paddingTop="24dp"
-        android:elevation="4dp">
-
+        android:elevation="4dp"
+        android:fitsSystemWindows="true">
         <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="44dp"
@@ -75,7 +75,13 @@
                 android:textSize="12sp" />
 
         </LinearLayout>
-
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/white"/>
     </LinearLayout>
 
     <!-- Messages list -->
