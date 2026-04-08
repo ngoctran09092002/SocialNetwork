@@ -57,7 +57,7 @@ dependencies {
     implementation("com.cloudinary:cloudinary-android:2.5.0")
     // Các thư viện Compose cốt lõi
     implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.runtime:runtime") // <-- Thư viện lỗi đang báo thiếu
+    implementation("androidx.compose.runtime:runtime")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
 
@@ -77,9 +77,6 @@ dependencies {
     implementation("com.google.firebase:firebase-database")    // Realtime Database
     implementation("com.google.firebase:firebase-storage")  // Cloud Storage
     kapt("com.github.bumptech.glide:compiler:4.16.0")
-    //implementation("com.google.firebase:firebase-auth-ktx")        // Authentication
-    //implementation("com.google.firebase:firebase-firestore-ktx")   // Cloud Firestore
-    //implementation("com.google.firebase:firebase-database-ktx")    // Realtime Database
 
     // AndroidX + UI
     implementation("androidx.core:core-ktx:1.15.0")
