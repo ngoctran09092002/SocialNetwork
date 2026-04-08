@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.socialnetwork.core.models.Comment
 import com.example.socialnetwork.core.models.Post
 import com.example.socialnetwork.features.feed.repository.FeedRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -33,6 +32,9 @@ class FeedViewModel(
     private val _likeCountChanged = MutableLiveData<Pair<String, Int>>()
     val likeCountChanged: LiveData<Pair<String, Int>> = _likeCountChanged
 
+    private val _postDeleted = MutableLiveData<Pair<String?, Int?>>()
+    val postDeleted: LiveData<Pair<String?, Int?>> = _postDeleted
+
     fun loadPosts() {
         _isLoading.value = true
         viewModelScope.launch {
@@ -42,7 +44,7 @@ class FeedViewModel(
                 _error.value = null
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading posts: ${e.message}", e)
-                _error.value = "Failed to load posts"
+                _error.value = "Không thể tải bài viết"
             } finally {
                 _isLoading.value = false
             }
@@ -61,10 +63,8 @@ class FeedViewModel(
                     .await()
                 val isCurrentlyLiked = likeDoc.exists()
 
-                // Gọi repository để like/unlike
                 feedRepository.likePost(postId, currentUserId)
 
-                // Cập nhật local list
                 _posts.value?.let { currentPosts ->
                     val updatedPosts = currentPosts.map { post ->
                         if (post.id == postId) {
@@ -81,21 +81,37 @@ class FeedViewModel(
                     _posts.value = updatedPosts
                 }
 
-                // Thông báo trạng thái like thay đổi
                 _likeStateChanged.value = Pair(postId, !isCurrentlyLiked)
-                // Thông báo số lượng like thay đổi
-                val newLikeCount = if (isCurrentlyLiked) {
-                    _posts.value?.find { it.id == postId }?.likesCount ?: 0
-                } else {
-                    _posts.value?.find { it.id == postId }?.likesCount ?: 0
-                }
-                _likeCountChanged.value = Pair(postId, newLikeCount)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error liking post: ${e.message}", e)
-                _error.value = "Failed to update like"
+                _error.value = "Không thể cập nhật like"
             }
         }
     }
 
+    fun deletePost(postId: String, position: Int) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val success = feedRepository.deletePost(postId)
+
+                if (success) {
+                    val currentPosts = _posts.value?.toMutableList() ?: mutableListOf()
+                    currentPosts.removeAll { it.id == postId }
+                    _posts.value = currentPosts
+
+                    _postDeleted.value = Pair(postId, position)
+                    _error.value = null
+                } else {
+                    _error.value = "Không thể xóa bài viết"
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting post: ${e.message}", e)
+                _error.value = "Lỗi khi xóa bài viết: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }

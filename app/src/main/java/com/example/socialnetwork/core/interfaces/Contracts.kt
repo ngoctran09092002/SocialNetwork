@@ -35,4 +35,10 @@ interface IChatRepository {
 interface IUserRepository {
     suspend fun getUserProfile(userId: String): User?
     suspend fun searchUsers(query: String): List<User>
+<<<<<<< Updated upstream
+=======
+    suspend fun getUserPostCount(userId: String): Int
+    suspend fun getFriendCount(userId: String): Int
+    suspend fun updateUser(user: User): Boolean
+>>>>>>> Stashed changes
 }

@@ -43,12 +43,12 @@ class CommentAdapter(
 
         Glide.with(holder.itemView.context)
             .load(comment.avatarUrl)
-            .placeholder(R.drawable.ic_launcher_background)
-            .error(R.drawable.ic_launcher_background)
+            .placeholder(R.drawable.profile)
+            .error(R.drawable.profile)
             .circleCrop()
             .into(holder.imgAvatar)
 
-        // Show delete button only for comment owner or post owner
+        // CHỈ hiển thị nút xóa nếu là chủ comment HOẶC chủ post
         val canDelete = comment.userId == currentUserId || postAuthorId == currentUserId
         holder.btnDelete.visibility = if (canDelete) View.VISIBLE else View.GONE
 
@@ -63,9 +63,9 @@ class CommentAdapter(
         val diff = now.time - timestamp
 
         return when {
-            diff < 60000 -> "Just now"
-            diff < 3600000 -> "${diff / 60000} minutes ago"
-            diff < 86400000 -> "${diff / 3600000} hours ago"
+            diff < 60000 -> "Vừa xong"
+            diff < 3600000 -> "${diff / 60000} phút trước"
+            diff < 86400000 -> "${diff / 3600000} giờ trước"
             else -> SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(date)
         }
     }

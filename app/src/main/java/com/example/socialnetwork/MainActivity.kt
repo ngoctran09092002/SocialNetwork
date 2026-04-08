@@ -1,8 +1,8 @@
 package com.example.socialnetwork
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -21,6 +21,15 @@ import com.example.socialnetwork.ui.ChatActivity
 =======
 >>>>>>> Stashed changes
 import com.example.socialnetwork.media.MediaTestFragment
+=======
+import androidx.fragment.app.Fragment
+import com.example.socialnetwork.ui.ProfileFragment
+import com.example.socialnetwork.ui.SearchFragment
+import com.example.socialnetwork.chat.ChatListFragment
+import com.example.socialnetwork.feed.FeedFragment
+import com.example.socialnetwork.feed.PostFragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
+>>>>>>> Stashed changes
 
 class MainActivity : AppCompatActivity() {
 //    override fun onCreate(savedInstanceState: Bundle?) {

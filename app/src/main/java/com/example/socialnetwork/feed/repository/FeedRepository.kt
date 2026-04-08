@@ -105,4 +105,29 @@ class FeedRepository : IFeedRepository {
             0
         }
     }
+    suspend fun deletePost(postId: String): Boolean {
+        return try {
+            Log.d(TAG, "Deleting post: $postId")
+
+            val postRef = db.collection("posts").document(postId)
+
+            val likesSnapshot = postRef.collection("likes").get().await()
+            for (likeDoc in likesSnapshot.documents) {
+                likeDoc.reference.delete().await()
+            }
+
+            val commentsSnapshot = postRef.collection("comments").get().await()
+            for (commentDoc in commentsSnapshot.documents) {
+                commentDoc.reference.delete().await()
+            }
+
+            postRef.delete().await()
+
+            Log.d(TAG, "Post deleted successfully")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting post: ${e.message}", e)
+            false
+        }
+    }
 }

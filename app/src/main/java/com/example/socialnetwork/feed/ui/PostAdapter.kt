@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -24,6 +26,7 @@ class PostAdapter(
     private var posts: List<Post> = emptyList(),
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
+    private val onDeletePost: (Post, Int) -> Unit,  // Thêm callback xóa post
     private val currentUserId: String
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
@@ -39,7 +42,8 @@ class PostAdapter(
         val btnComment: ImageButton = view.findViewById(R.id.btnComment)
         val txtUserName: TextView = view.findViewById(R.id.txtUserName)
         val imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
-        val txtPostTime : TextView = view.findViewById(R.id.txtPostTime)
+        val txtPostTime: TextView = view.findViewById(R.id.txtPostTime)
+        val btnDeletePost: ImageButton = view.findViewById(R.id.btnDeletePost)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -51,20 +55,44 @@ class PostAdapter(
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
         val isLiked = likedPosts.contains(post.id)
+
         holder.txtPostTime.text = formatTimestamp(post.timestamp)
         holder.txtCaption.text = post.caption
-        holder.txtLikeCount.text = formatCount(post.likesCount, "like")
-        holder.txtCommentCount.text = formatCount(post.commentCount, "comment")
+
+        // Format số lượng like và comment bằng tiếng Việt
+        holder.txtLikeCount.text = formatCount(post.likesCount, "thích")
+        holder.txtCommentCount.text = formatCount(post.commentCount, "bình luận")
 
         updateLikeButton(holder.btnLike, isLiked)
 
+<<<<<<< Updated upstream
         Glide.with(holder.itemView.context)
             .load(post.imageUrl)
             .placeholder(R.drawable.ic_launcher_background)
             .error(R.drawable.ic_launcher_background)
             .into(holder.imgPost)
+=======
+        // Hiển thị ảnh post
+        if (post.imageUrl.isNullOrEmpty()) {
+            holder.imgPost.visibility = View.GONE
+        } else {
+            holder.imgPost.visibility = View.VISIBLE
+            Glide.with(holder.itemView.context)
+                .load(post.imageUrl)
+                .placeholder(R.color.bg_screen)
+                .error(R.color.bg_screen)
+                .into(holder.imgPost)
+        }
+>>>>>>> Stashed changes
 
         loadUserInfo(holder, post.authorId)
+
+        // Hiển thị nút xóa nếu là chủ post
+        holder.btnDeletePost.visibility = if (post.authorId == currentUserId) View.VISIBLE else View.GONE
+
+        holder.btnDeletePost.setOnClickListener {
+            showDeleteConfirmation(holder.itemView, post, position)
+        }
 
         holder.btnLike.setOnClickListener {
             onLikeClick(post)
@@ -73,6 +101,17 @@ class PostAdapter(
         holder.btnComment.setOnClickListener {
             onCommentClick(post)
         }
+    }
+
+    private fun showDeleteConfirmation(view: View, post: Post, position: Int) {
+        AlertDialog.Builder(view.context)
+            .setTitle("Xóa bài viết")
+            .setMessage("Bạn có chắc chắn muốn xóa bài viết này không?")
+            .setPositiveButton("Xóa") { _, _ ->
+                onDeletePost(post, position)
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 
     private fun updateLikeButton(button: ImageButton, isLiked: Boolean) {
@@ -101,7 +140,7 @@ class PostAdapter(
             try {
                 val db = FirebaseFirestore.getInstance()
                 val userDoc = db.collection("users").document(userId).get().await()
-                val username = userDoc.getString("name") ?: "User ${userId.take(6)}"
+                val username = userDoc.getString("name") ?: "Người dùng ${userId.take(6)}"
                 val avatarUrl = userDoc.getString("avatarUrl") ?: ""
 
                 userCache[userId] = Pair(username, avatarUrl)
@@ -109,12 +148,12 @@ class PostAdapter(
                 holder.txtUserName.text = username
                 Glide.with(holder.itemView.context)
                     .load(avatarUrl)
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .error(R.drawable.ic_launcher_background)
+                    .placeholder(R.drawable.profile)
+                    .error(R.drawable.profile)
                     .circleCrop()
                     .into(holder.imgAvatar)
             } catch (e: Exception) {
-                holder.txtUserName.text = "User ${userId.take(6)}"
+                holder.txtUserName.text = "Người dùng ${userId.take(6)}"
             }
         }
     }
@@ -156,9 +195,9 @@ class PostAdapter(
 
     private fun formatCount(count: Int, word: String): String {
         return when {
-            count == 0 -> "No $word yet"
+            count == 0 -> "0 $word"
             count == 1 -> "1 $word"
-            else -> "$count ${word}s"
+            else -> "$count $word"
         }
     }
 
@@ -166,6 +205,13 @@ class PostAdapter(
         posts = newPosts
         loadLikedStates()
         notifyDataSetChanged()
+    }
+
+    fun removePost(position: Int) {
+        if (position in posts.indices) {
+            posts = posts.toMutableList().apply { removeAt(position) }
+            notifyItemRemoved(position)
+        }
     }
 
     fun updatePostCommentCount(postId: String, newCommentCount: Int) {
@@ -190,18 +236,27 @@ class PostAdapter(
         }
     }
 
+<<<<<<< Updated upstream
+=======
+    fun clearUserCache() {
+        userCache.clear()
+        notifyDataSetChanged()
+    }
+
+>>>>>>> Stashed changes
     private fun formatTimestamp(timestamp: Long): String {
         val date = Date(timestamp)
         val now = Date()
         val diff = now.time - timestamp
 
         return when {
-            diff < 60000 -> "Just now"
-            diff < 3600000 -> "${diff / 60000} minutes ago"
-            diff < 86400000 -> "${diff / 3600000} hours ago"
+            diff < 60000 -> "Vừa xong"
+            diff < 3600000 -> "${diff / 60000} phút trước"
+            diff < 86400000 -> "${diff / 3600000} giờ trước"
             else -> SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(date)
         }
     }
+
     fun getPosts(): List<Post> = posts
 
     override fun getItemCount(): Int = posts.size

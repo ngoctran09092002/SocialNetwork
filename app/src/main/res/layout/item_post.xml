@@ -14,6 +14,75 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
+<<<<<<< Updated upstream
+=======
+        <!-- Header: Avatar + Name + Time + Menu -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/imgAvatar"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/profile"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_bg"
+                android:clipToOutline="true" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtPostTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <!-- Nút 3 chấm để xóa post -->
+            <ImageButton
+                android:id="@+id/btnDeletePost"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_menu"
+                android:visibility="gone"
+                android:padding="8dp" />
+
+        </LinearLayout>
+
+        <!-- Caption -->
+        <TextView
+            android:id="@+id/txtCaption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- Post Image -->
+>>>>>>> Stashed changes
         <ImageView
             android:id="@+id/imgAvatar"
             android:layout_width="40dp"

@@ -82,6 +82,7 @@ class CommentViewModel : ViewModel() {
         }
     }
 
+
     fun deleteComment(postId: String, commentId: String, currentUserId: String, commentAuthorId: String, postAuthorId: String) {
         if (currentUserId != commentAuthorId && currentUserId != postAuthorId) {
             _error.value = "You don't have permission to delete this comment"
