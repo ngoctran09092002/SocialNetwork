@@ -1,6 +1,7 @@
 
 package com.example.socialnetwork.ui
 import android.content.Context
+import android.content.Intent
 import android.view.inputmethod.InputMethodManager
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
+import com.example.socialnetwork.auth.LoginActivity
 import com.example.socialnetwork.core.models.Message
 import com.example.socialnetwork.chat.ChatViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -28,7 +30,7 @@ class ChatActivity : AppCompatActivity() {
 
     // Lấy receiver info từ Intent (sẽ pass từ danh sách chat)
     //private val receiverId by lazy { intent.getStringExtra("receiverId") ?: "" }
-    private val receiverId by lazy { intent.getStringExtra("receiverId") ?: "user_2" }
+    private val receiverId by lazy { intent.getStringExtra("receiverId") ?: "" }
     private val receiverName by lazy { intent.getStringExtra("receiverName") ?: "Chat" }
     private val receiverAvatar by lazy { intent.getStringExtra("receiverAvatar") ?: "" }
     private lateinit var edtMessage: EditText
@@ -43,26 +45,17 @@ class ChatActivity : AppCompatActivity() {
         if (receiverAvatar.isNotEmpty()) {
             Glide.with(this).load(receiverAvatar).circleCrop().into(imgAvatar)
         }
-
         //  Firebase Auth
         val auth = FirebaseAuth.getInstance()
 
         if (auth.currentUser == null) {
-            // Chưa login → dùng anonymous login tạm
-            auth.signInAnonymously()
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        uid = auth.currentUser?.uid ?: ""
-                        Log.d("AUTH", "Anonymous login success: $uid")
-                        initChat()
-                    } else {
-                        Log.e("AUTH", "Anonymous login failed", task.exception)
-                    }
-                }
-        } else {
-            // Đã login → dùng uid thật
-            uid = auth.currentUser?.uid ?: ""
+            // Chưa login → chuyển sang màn login
+            startActivity(Intent(this, LoginActivity::class.java))
             Log.d("AUTH", "User already logged in: $uid")
+            finish()
+            return
+        } else {
+            uid = auth.currentUser?.uid ?: ""
             initChat()
         }
     }
