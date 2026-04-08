@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.ui.ProfileFragment
 import com.example.socialnetwork.ui.SearchFragment
-import com.example.socialnetwork.feed.ChatListFragment
+import com.example.socialnetwork.chat.ChatListFragment
 import com.example.socialnetwork.feed.FeedFragment
 import com.example.socialnetwork.feed.PostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
