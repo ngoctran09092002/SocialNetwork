@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.text.clear
 
 class PostAdapter(
     private var posts: List<Post> = emptyList(),
@@ -189,6 +190,11 @@ class PostAdapter(
             }
             notifyItemChanged(position)
         }
+    }
+
+    fun clearUserCache() {
+        userCache.clear()
+        notifyDataSetChanged()
     }
 
     fun getPosts(): List<Post> = posts

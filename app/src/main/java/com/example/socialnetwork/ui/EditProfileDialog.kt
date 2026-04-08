@@ -79,12 +79,8 @@ class EditProfileDialog : DialogFragment() {
             )
 
             lifecycleScope.launch {
-                if (userRepository is FirebaseUserRepository) {
-                    (userRepository as FirebaseUserRepository).updateUser(updatedUser)
-                }
-
+                (userRepository as? FirebaseUserRepository)?.updateUser(updatedUser)
                 listener?.onProfileUpdated(updatedUser)
-                saveAvatarUri(newAvatarUrl)
                 dismiss()
             }
         }

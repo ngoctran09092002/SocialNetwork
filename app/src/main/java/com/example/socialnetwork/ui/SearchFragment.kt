@@ -1,3 +1,4 @@
+// SearchFragment.kt
 package com.example.socialnetwork.ui
 
 import android.os.Bundle
@@ -35,7 +36,7 @@ class SearchFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         return inflater.inflate(R.layout.search_friend, container, false)
     }
 
@@ -50,26 +51,22 @@ class SearchFragment : Fragment() {
         currentUserId = authService.getCurrentUserId()
 
         lifecycleScope.launch {
-            allUsers = (userRepository as FirebaseUserRepository).getAllUsers()
+            allUsers = (userRepository as FirebaseUserRepository)
+                .getAllUsers()
                 .filter { it.id != currentUserId }
-//            adapter.updateList(allUsers)   // mới mở lên là thấy all user
         }
 
         edtSearch.addTextChangedListener {
             val query = it.toString().trim().lowercase()
-            val filtered = if (query.isEmpty()) {
-                emptyList()
-            } else {
-                allUsers.filter { user ->
-                    user.name.lowercase().contains(query)
-                }
-            }
+            val filtered = if (query.isEmpty()) emptyList()
+            else allUsers.filter { user -> user.name.lowercase().contains(query) }
             adapter.updateList(filtered)
         }
     }
 
     private fun showBottomSheet(user: User) {
-        val sheet = UserBottomSheet(user)
-        sheet.show(parentFragmentManager, "UserBottomSheet")
+        val sheet = UserBottomSheet()
+        sheet.setUser(user)
+        sheet.show(childFragmentManager, "UserBottomSheet")
     }
 }
