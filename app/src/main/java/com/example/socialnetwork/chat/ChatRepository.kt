@@ -7,29 +7,30 @@ import com.google.firebase.database.*
 
 class ChatRepositoryImpl : IChatRepository {
 
-    private val dbRef: DatabaseReference = FirebaseDatabase
-        .getInstance("https://androi-2-410ab-default-rtdb.firebaseio.com")
-        .getReference("chats")
+    // Lấy config Firebase mặc định, giữ an toàn root node "chats"
+    private val dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("chats")
     private var activeListener: ChildEventListener? = null
     private var activeRef: Query? = null
 
     override fun observeMessages(chatRoomId: String, onNewMessage: (Message) -> Unit) {
         removeListener()
-        Log.d("ChatRepo", "Bắt đầu lắng nghe chatRoomId=$chatRoomId")
 
-        val ref = dbRef.child(chatRoomId).child("messages")
+        val ref = dbRef.child(chatRoomId)
+            .child("messages")
             .orderByChild("timestamp")
 
         val listener = object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                Log.d("ChatRepo", "Nhận message: ${snapshot.value}")
                 snapshot.getValue(Message::class.java)?.let { onNewMessage(it) }
             }
+
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onChildRemoved(snapshot: DataSnapshot) {}
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+
             override fun onCancelled(error: DatabaseError) {
-                Log.e("ChatRepo", "Lỗi lắng nghe: ${error.code} - ${error.message}")
+                // Bắt buộc phải giữ log error để kiểm soát lỗi kết nối/quyền truy cập
+                Log.e("ChatRepo", "Lỗi lắng nghe DB: ${error.code} - ${error.message}")
             }
         }
 
@@ -44,10 +45,8 @@ class ChatRepositoryImpl : IChatRepository {
         else
             "${message.receiverId}_${message.senderId}"
 
-        Log.d("ChatRepo", "Gửi tin nhắn vào chatId=$chatId")
         dbRef.child(chatId).child("messages").push().setValue(message)
-            .addOnSuccessListener { Log.d("ChatRepo", "Gửi thành công") }
-            .addOnFailureListener { Log.e("ChatRepo", "Gửi thất bại: ${it.message}") }
+            .addOnFailureListener { Log.e("ChatRepo", "Gửi tin nhắn thất bại: ${it.message}") }
     }
 
     override fun removeListener() {
