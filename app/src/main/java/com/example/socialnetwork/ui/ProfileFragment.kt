@@ -1,15 +1,18 @@
 package com.example.socialnetwork.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
+import com.example.socialnetwork.auth.LoginActivity
 import com.example.socialnetwork.core.interfaces.IAuthService
 import com.example.socialnetwork.core.interfaces.IUserRepository
 import com.example.socialnetwork.core.models.Post
@@ -19,9 +22,13 @@ import com.example.socialnetwork.feed.ui.CommentDialog
 import com.example.socialnetwork.feed.ui.PostAdapter
 import com.example.socialnetwork.firebase.FirebaseAuthService
 import com.example.socialnetwork.firebase.FirebaseUserRepository
+import com.example.socialnetwork.util.CloudinaryUploader
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -30,18 +37,46 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private lateinit var postAdapter: PostAdapter
 
     private lateinit var imgAvatar: ImageView
+    private lateinit var imgCover: ImageView
     private lateinit var tvName: TextView
     private lateinit var tvBio: TextView
     private lateinit var tvPostCount: TextView
     private lateinit var tvFriendCount: TextView
     private lateinit var btnEditProfile: View
     private lateinit var btnBack: ImageButton
+    private lateinit var btnLogout: ImageButton
+    private lateinit var btnChangeCover: ImageButton
 
     private val userRepository: IUserRepository = FirebaseUserRepository()
     private val authService: IAuthService = FirebaseAuthService()
 
     private var userId: String? = null
     private var currentUserId: String? = null
+
+    // Cover photo picker
+    private val pickCover = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri ?: return@registerForActivityResult
+        Toast.makeText(requireContext(), "Đang tải ảnh bìa...", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            try {
+                val coverUrl = withContext(Dispatchers.IO) {
+                    CloudinaryUploader.upload(requireContext(), uri)
+                }
+                // Lưu vào Firestore
+                val uid = currentUserId ?: return@launch
+                withContext(Dispatchers.IO) {
+                    FirebaseFirestore.getInstance().collection("users").document(uid)
+                        .update("coverUrl", coverUrl).await()
+                }
+                // Cập nhật UI
+                Glide.with(requireContext()).load(coverUrl).centerCrop().into(imgCover)
+                Toast.makeText(requireContext(), "Đã cập nhật ảnh bìa", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e("ProfileFragment", "Upload cover failed: ${e.message}")
+                Toast.makeText(requireContext(), "Lỗi tải ảnh bìa", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,12 +88,15 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         super.onViewCreated(view, savedInstanceState)
 
         imgAvatar = view.findViewById(R.id.imgAvatar)
+        imgCover = view.findViewById(R.id.imgCover)
         tvName = view.findViewById(R.id.tvName)
         tvBio = view.findViewById(R.id.tvBio)
         tvPostCount = view.findViewById(R.id.tvPostCount)
         tvFriendCount = view.findViewById(R.id.tvFollowerCount)
         btnEditProfile = view.findViewById(R.id.btnEditProfile)
         btnBack = view.findViewById(R.id.btnBack)
+        btnLogout = view.findViewById(R.id.btnLogout)
+        btnChangeCover = view.findViewById(R.id.btnChangeCover)
         recyclerPosts = view.findViewById(R.id.recyclerPosts)
 
         val profileId = userId ?: currentUserId
@@ -66,6 +104,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         btnEditProfile.visibility = if (isMyProfile) View.VISIBLE else View.GONE
         btnBack.visibility = if (isMyProfile) View.GONE else View.VISIBLE
+        btnLogout.visibility = if (isMyProfile) View.VISIBLE else View.GONE
+        btnChangeCover.visibility = if (isMyProfile) View.VISIBLE else View.GONE
 
         postAdapter = PostAdapter(
             posts = emptyList(),
@@ -91,6 +131,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         btnEditProfile.setOnClickListener { showEditDialog() }
         btnBack.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
+        btnChangeCover.setOnClickListener { pickCover.launch("image/*") }
+        btnLogout.setOnClickListener { performLogout() }
     }
 
     private fun handleLikePost(post: Post) {
@@ -221,6 +263,28 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             .error(R.drawable.profile)
             .circleCrop()
             .into(imgAvatar)
+
+        // Load ảnh bìa
+        if (user.coverUrl.isNotEmpty()) {
+            Glide.with(requireContext())
+                .load(user.coverUrl)
+                .centerCrop()
+                .into(imgCover)
+        }
+    }
+
+    private fun performLogout() {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Đăng xuất")
+            .setMessage("Bạn có chắc muốn đăng xuất?")
+            .setPositiveButton("Đăng xuất") { _, _ ->
+                FirebaseAuth.getInstance().signOut()
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
     }
 
     private fun showEditDialog() {

@@ -28,6 +28,16 @@
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnLogout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_lock_power_off"
+                android:contentDescription="Đăng xuất"
+                app:tint="@color/text_secondary"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Cover + Avatar block -->
@@ -41,11 +51,30 @@
                 android:orientation="vertical">
 
                 <!-- Cover -->
-                <ImageView
-                    android:id="@+id/imgCover"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:background="@drawable/background_gradient" />
+                    android:layout_height="180dp">
+
+                    <ImageView
+                        android:id="@+id/imgCover"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/background_gradient" />
+
+                    <ImageButton
+                        android:id="@+id/btnChangeCover"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/circle_bg"
+                        android:src="@android:drawable/ic_menu_camera"
+                        android:padding="8dp"
+                        android:elevation="4dp"
+                        android:visibility="gone" />
+
+                </FrameLayout>
                 <!-- Nền trắng ghép nối (Rất cần thiết) -->
                 <LinearLayout
                     android:layout_width="match_parent"

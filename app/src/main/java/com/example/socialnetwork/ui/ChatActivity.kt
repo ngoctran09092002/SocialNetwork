@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
@@ -19,17 +20,21 @@ import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
 import com.example.socialnetwork.auth.LoginActivity
 import com.example.socialnetwork.chat.ChatViewModel
+import com.example.socialnetwork.core.models.ChatRoom
 import com.example.socialnetwork.util.CloudinaryUploader
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class ChatActivity : AppCompatActivity() {
 
     private val viewModel: ChatViewModel by viewModels()
     private lateinit var chatAdapter: ChatAdapter
+    private val db = FirebaseFirestore.getInstance()
 
     private var uid: String = ""
     private val receiverId by lazy { intent.getStringExtra("receiverId") ?: "" }
@@ -38,8 +43,11 @@ class ChatActivity : AppCompatActivity() {
 
     private lateinit var edtMessage: EditText
     private lateinit var rvChat: RecyclerView
+    private lateinit var inputBar: View
+    private lateinit var requestBar: View
+    private var chatRoomId = ""
+    private var chatRoomStatus = ""
 
-    // Image picker cho gửi ảnh trong chat
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri ?: return@registerForActivityResult
         Toast.makeText(this, "Đang tải ảnh lên...", Toast.LENGTH_SHORT).show()
@@ -47,12 +55,11 @@ class ChatActivity : AppCompatActivity() {
             try {
                 val imageUrl = CloudinaryUploader.upload(this@ChatActivity, uri)
                 withContext(Dispatchers.Main) {
-                    viewModel.sendMessage(imageUrl, uid, receiverId, "IMAGE")
+                    sendMessageWithRoomCheck(imageUrl, "IMAGE")
                 }
             } catch (e: Exception) {
-                Log.e("ChatActivity", "Upload ảnh thất bại: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ChatActivity, "Gửi ảnh thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ChatActivity, "Gửi ảnh thất bại", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -62,7 +69,7 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        // Setup UI Toolbar
+        // Toolbar
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
         findViewById<TextView>(R.id.tvReceiverName).text = receiverName
         val imgAvatar = findViewById<ImageView>(R.id.imgReceiverAvatar)
@@ -70,26 +77,27 @@ class ChatActivity : AppCompatActivity() {
             Glide.with(this).load(receiverAvatar).circleCrop().into(imgAvatar)
         }
 
-        // Firebase Auth
+        // Auth check
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
-        } else {
-            uid = auth.currentUser?.uid ?: ""
-            initChat()
         }
+        uid = auth.currentUser?.uid ?: ""
+        chatRoomId = buildChatRoomId(uid, receiverId)
+
+        initChat()
+        checkChatRoomStatus()
     }
 
     private fun initChat() {
-        if (uid.isEmpty() || receiverId.isEmpty()) {
-            Log.e("CHAT", "UID hoặc receiverId chưa sẵn sàng")
-            return
-        }
+        if (uid.isEmpty() || receiverId.isEmpty()) return
 
         rvChat = findViewById(R.id.rvChat)
         edtMessage = findViewById(R.id.edtMessage)
+        inputBar = findViewById(R.id.inputBar)
+        requestBar = findViewById(R.id.requestBar)
         val btnSend = findViewById<ImageButton>(R.id.btnSend)
         val btnDelete = findViewById<ImageButton>(R.id.btnDelete)
         val btnPickImage = findViewById<ImageButton>(R.id.btnPickImage)
@@ -101,14 +109,6 @@ class ChatActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
         rvChat.layoutManager = layoutManager
         rvChat.adapter = chatAdapter
-        rvChat.isNestedScrollingEnabled = true
-        rvChat.overScrollMode = RecyclerView.OVER_SCROLL_ALWAYS
-
-        edtMessage.post {
-            edtMessage.requestFocus()
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(edtMessage, InputMethodManager.SHOW_IMPLICIT)
-        }
 
         viewModel.startObservingMessages(uid, receiverId)
 
@@ -121,47 +121,187 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-        // Gửi tin nhắn text
         btnSend.setOnClickListener {
             val content = edtMessage.text.toString().trim()
             if (content.isNotEmpty()) {
-                viewModel.sendMessage(content, uid, receiverId)
+                sendMessageWithRoomCheck(content, "TEXT")
                 edtMessage.text.clear()
             }
         }
 
-        // Gửi ảnh
-        btnPickImage.setOnClickListener {
-            pickImage.launch("image/*")
-        }
+        btnPickImage.setOnClickListener { pickImage.launch("image/*") }
 
-        // Xóa tất cả (local)
         btnDelete.setOnClickListener {
             viewModel.deleteAllMessagesForMe(uid, receiverId)
         }
 
-        // Scroll lên → load tin nhắn cũ
+        // Accept / Reject buttons
+        requestBar.findViewById<View>(R.id.btnAccept)?.setOnClickListener {
+            acceptChatRequest()
+        }
+        requestBar.findViewById<View>(R.id.btnReject)?.setOnClickListener {
+            rejectChatRequest()
+        }
+
         rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val firstVisible = layoutManager.findFirstVisibleItemPosition()
-                if (firstVisible in 0..2) {
-                    loadOlderMessages()
-                }
+                if (firstVisible in 0..2) loadOlderMessages()
             }
         })
+    }
+
+    /**
+     * Kiểm tra trạng thái chatRoom: PENDING / ACCEPTED / chưa tồn tại
+     */
+    private fun checkChatRoomStatus() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val doc = db.collection("chatRooms").document(chatRoomId).get().await()
+                val room = doc.toObject(ChatRoom::class.java)
+                withContext(Dispatchers.Main) {
+                    if (room == null) {
+                        // Chưa có chatRoom → user mới, sẽ tạo khi gửi tin nhắn đầu tiên
+                        chatRoomStatus = ""
+                        inputBar.visibility = View.VISIBLE
+                        requestBar.visibility = View.GONE
+                    } else {
+                        chatRoomStatus = room.status
+                        when {
+                            room.isPendingForMe(uid) -> {
+                                // Mình là người nhận → hiện accept/reject, ẩn input
+                                requestBar.visibility = View.VISIBLE
+                                inputBar.visibility = View.GONE
+                            }
+                            room.status == ChatRoom.STATUS_PENDING && room.initiatorId == uid -> {
+                                // Mình là người gửi, đang chờ đối phương chấp nhận
+                                inputBar.visibility = View.VISIBLE
+                                requestBar.visibility = View.GONE
+                                Toast.makeText(this@ChatActivity, "Đang chờ đối phương chấp nhận", Toast.LENGTH_SHORT).show()
+                            }
+                            room.status == ChatRoom.STATUS_ACCEPTED -> {
+                                inputBar.visibility = View.VISIBLE
+                                requestBar.visibility = View.GONE
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ChatActivity", "checkChatRoomStatus error: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Gửi tin nhắn + tạo/cập nhật chatRoom metadata
+     */
+    private fun sendMessageWithRoomCheck(content: String, type: String) {
+        viewModel.sendMessage(content, uid, receiverId, type)
+
+        // Cập nhật chatRoom metadata
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val myName = FirebaseAuth.getInstance().currentUser?.displayName ?: ""
+                val docRef = db.collection("chatRooms").document(chatRoomId)
+                val doc = docRef.get().await()
+
+                if (!doc.exists()) {
+                    // Tạo chatRoom mới với status PENDING
+                    val myProfile = db.collection("users").document(uid).get().await()
+                    val receiverProfile = db.collection("users").document(receiverId).get().await()
+
+                    val u1Id = if (uid < receiverId) uid else receiverId
+                    val u2Id = if (uid < receiverId) receiverId else uid
+                    val u1Name = if (uid < receiverId) (myProfile.getString("name") ?: "") else (receiverProfile.getString("name") ?: "")
+                    val u2Name = if (uid < receiverId) (receiverProfile.getString("name") ?: "") else (myProfile.getString("name") ?: "")
+                    val u1Avatar = if (uid < receiverId) (myProfile.getString("avatarUrl") ?: "") else (receiverProfile.getString("avatarUrl") ?: "")
+                    val u2Avatar = if (uid < receiverId) (receiverProfile.getString("avatarUrl") ?: "") else (myProfile.getString("avatarUrl") ?: "")
+
+                    val room = ChatRoom(
+                        chatRoomId = chatRoomId,
+                        user1Id = u1Id,
+                        user2Id = u2Id,
+                        initiatorId = uid,
+                        status = ChatRoom.STATUS_PENDING,
+                        lastMessage = content,
+                        lastMessageType = type,
+                        lastMessageTime = System.currentTimeMillis(),
+                        user1Name = u1Name,
+                        user2Name = u2Name,
+                        user1Avatar = u1Avatar,
+                        user2Avatar = u2Avatar
+                    )
+                    docRef.set(room).await()
+                    withContext(Dispatchers.Main) {
+                        chatRoomStatus = ChatRoom.STATUS_PENDING
+                    }
+                } else {
+                    // Cập nhật last message
+                    docRef.update(
+                        mapOf(
+                            "lastMessage" to content,
+                            "lastMessageType" to type,
+                            "lastMessageTime" to System.currentTimeMillis()
+                        )
+                    ).await()
+                }
+            } catch (e: Exception) {
+                Log.e("ChatActivity", "updateChatRoom error: ${e.message}")
+            }
+        }
+    }
+
+    private fun acceptChatRequest() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                db.collection("chatRooms").document(chatRoomId)
+                    .update("status", ChatRoom.STATUS_ACCEPTED).await()
+                withContext(Dispatchers.Main) {
+                    chatRoomStatus = ChatRoom.STATUS_ACCEPTED
+                    requestBar.visibility = View.GONE
+                    inputBar.visibility = View.VISIBLE
+                    Toast.makeText(this@ChatActivity, "Đã chấp nhận", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ChatActivity, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun rejectChatRequest() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                db.collection("chatRooms").document(chatRoomId)
+                    .update("status", ChatRoom.STATUS_REJECTED).await()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ChatActivity, "Đã từ chối", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ChatActivity, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun loadOlderMessages() {
         val oldestTimestamp = chatAdapter.getOldestMessageTimestamp() ?: return
         viewModel.getOlderMessages(uid, receiverId, oldestTimestamp) { olderMessages ->
             if (olderMessages.isNotEmpty()) {
-                val firstVisible = (rvChat.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                val lm = rvChat.layoutManager as LinearLayoutManager
+                val firstVisible = lm.findFirstVisibleItemPosition()
                 val offsetView = rvChat.getChildAt(0)
                 val offset = offsetView?.top ?: 0
                 chatAdapter.addOlderMessages(olderMessages)
-                (rvChat.layoutManager as LinearLayoutManager)
-                    .scrollToPositionWithOffset(firstVisible + olderMessages.size, offset)
+                lm.scrollToPositionWithOffset(firstVisible + olderMessages.size, offset)
             }
         }
+    }
+
+    private fun buildChatRoomId(a: String, b: String): String {
+        return if (a < b) "${a}_${b}" else "${b}_${a}"
     }
 }

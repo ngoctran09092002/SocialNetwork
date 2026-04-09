@@ -23,7 +23,7 @@ class UserAdapter(
 
         fun bind(user: User) {
             txtName.text = user.name
-            txtDesc.text = user.bio
+            txtDesc.text = if (user.email.isNotEmpty()) user.email else user.bio
 
             Glide.with(itemView.context)
                 .load(user.avatarUrl)

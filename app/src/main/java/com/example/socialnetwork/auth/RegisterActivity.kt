@@ -148,10 +148,11 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun saveUserToFirestore(uid: String, name: String) {
-        // Tạo đối tượng User (Node 5 sẽ lấy data từ đây)
+        val email = edtEmail.text.toString().trim()
         val newUser = User(
             id = uid,
             name = name,
+            email = email,
             avatarUrl = "",
             bio = "Chào mừng bạn đến với LINK Social!"
         )
