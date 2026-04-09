@@ -41,7 +41,7 @@ class FeedRepository : IFeedRepository {
         return try {
             val snapshot = db.collection("posts")
                 .whereEqualTo("authorId", userId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+//                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
 
