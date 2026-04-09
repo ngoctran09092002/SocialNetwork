@@ -9,6 +9,8 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,8 +19,12 @@ import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
 import com.example.socialnetwork.auth.LoginActivity
 import com.example.socialnetwork.chat.ChatViewModel
-import com.example.socialnetwork.core.models.Message
+import com.example.socialnetwork.util.CloudinaryUploader
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ChatActivity : AppCompatActivity() {
 
@@ -32,17 +38,39 @@ class ChatActivity : AppCompatActivity() {
 
     private lateinit var edtMessage: EditText
     private lateinit var rvChat: RecyclerView
+
+    // Image picker cho gửi ảnh trong chat
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri ?: return@registerForActivityResult
+        Toast.makeText(this, "Đang tải ảnh lên...", Toast.LENGTH_SHORT).show()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val imageUrl = CloudinaryUploader.upload(this@ChatActivity, uri)
+                withContext(Dispatchers.Main) {
+                    viewModel.sendMessage(imageUrl, uid, receiverId, "IMAGE")
+                }
+            } catch (e: Exception) {
+                Log.e("ChatActivity", "Upload ảnh thất bại: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ChatActivity, "Gửi ảnh thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        //  Setup UI Toolbar
+
+        // Setup UI Toolbar
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
         findViewById<TextView>(R.id.tvReceiverName).text = receiverName
         val imgAvatar = findViewById<ImageView>(R.id.imgReceiverAvatar)
         if (receiverAvatar.isNotEmpty()) {
             Glide.with(this).load(receiverAvatar).circleCrop().into(imgAvatar)
         }
-        //  Firebase Auth
+
+        // Firebase Auth
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -55,43 +83,45 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initChat() {
-
         if (uid.isEmpty() || receiverId.isEmpty()) {
             Log.e("CHAT", "UID hoặc receiverId chưa sẵn sàng")
             return
         }
+
         rvChat = findViewById(R.id.rvChat)
         edtMessage = findViewById(R.id.edtMessage)
         val btnSend = findViewById<ImageButton>(R.id.btnSend)
         val btnDelete = findViewById<ImageButton>(R.id.btnDelete)
+        val btnPickImage = findViewById<ImageButton>(R.id.btnPickImage)
 
         chatAdapter = ChatAdapter(uid) { message ->
             viewModel.deleteMessageForMeLocally(message, uid)
         }
 
-        val layoutManager = LinearLayoutManager(this).apply {
-            stackFromEnd = true
-        }
+        val layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
         rvChat.layoutManager = layoutManager
         rvChat.adapter = chatAdapter
         rvChat.isNestedScrollingEnabled = true
         rvChat.overScrollMode = RecyclerView.OVER_SCROLL_ALWAYS
+
         edtMessage.post {
             edtMessage.requestFocus()
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(edtMessage, InputMethodManager.SHOW_IMPLICIT)
         }
+
         viewModel.startObservingMessages(uid, receiverId)
+
         viewModel.messages.observe(this) { list ->
             val lastVisible = layoutManager.findLastVisibleItemPosition()
             val isAtBottom = lastVisible >= chatAdapter.itemCount - 2
-
             chatAdapter.updateMessages(list)
-
             if (isAtBottom && chatAdapter.itemCount > 0) {
                 rvChat.scrollToPosition(chatAdapter.itemCount - 1)
             }
         }
+
+        // Gửi tin nhắn text
         btnSend.setOnClickListener {
             val content = edtMessage.text.toString().trim()
             if (content.isNotEmpty()) {
@@ -100,27 +130,34 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
+        // Gửi ảnh
+        btnPickImage.setOnClickListener {
+            pickImage.launch("image/*")
+        }
+
+        // Xóa tất cả (local)
         btnDelete.setOnClickListener {
             viewModel.deleteAllMessagesForMe(uid, receiverId)
         }
+
+        // Scroll lên → load tin nhắn cũ
         rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val firstVisible = layoutManager.findFirstVisibleItemPosition()
-                if (firstVisible >= 0 && firstVisible <= 2) {
+                if (firstVisible in 0..2) {
                     loadOlderMessages()
                 }
             }
         })
     }
+
     private fun loadOlderMessages() {
-        // Lấy timestamp của tin nhắn cũ nhất hiện có
         val oldestTimestamp = chatAdapter.getOldestMessageTimestamp() ?: return
         viewModel.getOlderMessages(uid, receiverId, oldestTimestamp) { olderMessages ->
             if (olderMessages.isNotEmpty()) {
                 val firstVisible = (rvChat.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                 val offsetView = rvChat.getChildAt(0)
                 val offset = offsetView?.top ?: 0
-
                 chatAdapter.addOlderMessages(olderMessages)
                 (rvChat.layoutManager as LinearLayoutManager)
                     .scrollToPositionWithOffset(firstVisible + olderMessages.size, offset)

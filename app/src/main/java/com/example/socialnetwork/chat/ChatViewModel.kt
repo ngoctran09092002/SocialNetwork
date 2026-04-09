@@ -7,7 +7,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.socialnetwork.core.models.Message
-import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
@@ -19,93 +18,84 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     val messages: LiveData<List<Message>> = _messages
 
     private val messageMap = TreeMap<Long, Message>() // key = timestamp
-
     private val prefs = context.getSharedPreferences("chat_prefs", Context.MODE_PRIVATE)
-    private val firestore = FirebaseFirestore.getInstance()
+
+    private var currentChatRoomId = ""
 
     fun startObservingMessages(senderId: String, receiverId: String) {
-
         repository.removeListener()
         messageMap.clear()
         _messages.postValue(emptyList())
 
-        val chatRoomId = if (senderId < receiverId)
-            "${senderId}_${receiverId}"
-        else
-            "${receiverId}_${senderId}"
+        currentChatRoomId = buildChatRoomId(senderId, receiverId)
+        Log.d("CHAT", "OBSERVE chatId: $currentChatRoomId")
 
-        Log.d("CHAT", "OBSERVE chatId: $chatRoomId")
-
-        repository.observeMessages(chatRoomId) { newMessage ->
-            val deletedIds = getDeletedMessageIds(chatRoomId)
+        repository.observeMessages(currentChatRoomId) { newMessage ->
+            val deletedIds = getDeletedMessageIds(currentChatRoomId)
             if (newMessage.id in deletedIds) return@observeMessages
             messageMap[newMessage.timestamp] = newMessage
             _messages.postValue(messageMap.values.toList())
         }
     }
-    fun sendMessage(content: String, senderId: String, receiverId: String) {
-        Log.d("CHAT_DEBUG", "senderId: $senderId")
-        if (content.isBlank()) return
 
-        val timestamp = System.currentTimeMillis()
+    fun sendMessage(content: String, senderId: String, receiverId: String, type: String = "TEXT") {
+        if (content.isBlank()) return
         val message = Message(
-            id = "",
             senderId = senderId,
             receiverId = receiverId,
             content = content,
-            timestamp = timestamp
+            type = type,
+            timestamp = System.currentTimeMillis()
         )
-
         repository.sendMessage(message)
     }
-    private fun getDeletedMessageIds(chatRoomId: String): MutableSet<String> {
-        return prefs.getStringSet(chatRoomId, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-    }
-    private fun saveDeletedMessageId(chatRoomId: String, messageId: String) {
-        val set = getDeletedMessageIds(chatRoomId)
-        set.add(messageId)
-        prefs.edit().putStringSet(chatRoomId, set).apply()
-    }
-    fun deleteAllMessagesForMe(senderId: String, receiverId: String) {
-        val chatRoomId = if (senderId < receiverId)
-            "${senderId}_${receiverId}"
-        else
-            "${receiverId}_${senderId}"
-        messageMap.values.forEach { saveDeletedMessageId(chatRoomId, it.id) }
-        messageMap.clear()
-        _messages.postValue(emptyList())
-    }
-    fun deleteMessageForMeLocally(message: Message, senderId: String) {
-        val chatRoomId = if (senderId < message.receiverId)
-            "${senderId}_${message.receiverId}"
-        else
-            "${message.receiverId}_${senderId}"
-        messageMap.entries.removeIf { it.value.id == message.id }
-        _messages.postValue(messageMap.values.toList())
-        saveDeletedMessageId(chatRoomId, message.id)
-    }
+
     fun getOlderMessages(
         uid: String,
         receiverId: String,
         oldestTimestamp: Long,
         callback: (List<Message>) -> Unit
     ) {
-        val chatRoomId = if (uid < receiverId)
-            "${uid}_${receiverId}"
-        else
-            "${receiverId}_${uid}"
-        val messagesRef = firestore.collection("messages")
-            .whereEqualTo("chatRoomId", chatRoomId)
-            .whereLessThan("timestamp", oldestTimestamp)
-            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .limit(10)
+        val chatRoomId = buildChatRoomId(uid, receiverId)
+        val deletedIds = getDeletedMessageIds(chatRoomId)
 
-        messagesRef.get().addOnSuccessListener { snapshot ->
-            val olderMessages = snapshot.toObjects(Message::class.java).sortedBy { it.timestamp }
-            Log.d("CHAT_DEBUG", "Older messages count: ${olderMessages.size}")
-            callback(olderMessages)
+        repository.getOlderMessages(chatRoomId, oldestTimestamp) { olderMessages ->
+            val filtered = olderMessages.filter { it.id !in deletedIds }
+            // Thêm vào messageMap để tránh trùng lặp
+            filtered.forEach { messageMap[it.timestamp] = it }
+            Log.d("CHAT", "Loaded ${filtered.size} older messages")
+            callback(filtered)
         }
     }
+
+    fun deleteAllMessagesForMe(senderId: String, receiverId: String) {
+        val chatRoomId = buildChatRoomId(senderId, receiverId)
+        messageMap.values.forEach { saveDeletedMessageId(chatRoomId, it.id) }
+        messageMap.clear()
+        _messages.postValue(emptyList())
+    }
+
+    fun deleteMessageForMeLocally(message: Message, senderId: String) {
+        val chatRoomId = buildChatRoomId(senderId, message.receiverId)
+        messageMap.entries.removeIf { it.value.id == message.id }
+        _messages.postValue(messageMap.values.toList())
+        saveDeletedMessageId(chatRoomId, message.id)
+    }
+
+    private fun buildChatRoomId(a: String, b: String): String {
+        return if (a < b) "${a}_${b}" else "${b}_${a}"
+    }
+
+    private fun getDeletedMessageIds(chatRoomId: String): MutableSet<String> {
+        return prefs.getStringSet(chatRoomId, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+    }
+
+    private fun saveDeletedMessageId(chatRoomId: String, messageId: String) {
+        val set = getDeletedMessageIds(chatRoomId)
+        set.add(messageId)
+        prefs.edit().putStringSet(chatRoomId, set).apply()
+    }
+
     override fun onCleared() {
         super.onCleared()
         repository.removeListener()

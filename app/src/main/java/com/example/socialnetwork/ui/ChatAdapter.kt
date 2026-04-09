@@ -5,8 +5,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.socialnetwork.R
 import com.example.socialnetwork.core.models.Message
 import java.text.SimpleDateFormat
@@ -45,35 +47,54 @@ class ChatAdapter(
         val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(message.timestamp))
 
         if (holder is SentViewHolder) {
-            holder.tvMsg.text = message.content
             holder.tvTime.text = time
             holder.itemView.setOnLongClickListener {
-                try {
-                    showDeleteDialog(holder.itemView, message)
-                } catch (e: Exception) {
-                    Log.e("CHAT_ADAPTER", "Error showing delete dialog", e)
+                try { showDeleteDialog(holder.itemView, message) } catch (e: Exception) {
+                    Log.e("ChatAdapter", "Delete dialog error", e)
                 }
                 true
             }
+            if (message.type == "IMAGE") {
+                holder.tvMsg.visibility = View.GONE
+                holder.imgChat.visibility = View.VISIBLE
+                Glide.with(holder.itemView.context).load(message.content)
+                    .placeholder(R.color.bg_screen).into(holder.imgChat)
+            } else {
+                holder.tvMsg.visibility = View.VISIBLE
+                holder.imgChat.visibility = View.GONE
+                holder.tvMsg.text = message.content
+            }
         } else if (holder is ReceivedViewHolder) {
-            holder.tvMsg.text = message.content
             holder.tvTime.text = time
             holder.itemView.setOnLongClickListener {
                 showDeleteDialog(holder.itemView, message)
                 true
             }
+            if (message.type == "IMAGE") {
+                holder.tvMsg.visibility = View.GONE
+                holder.imgChat.visibility = View.VISIBLE
+                Glide.with(holder.itemView.context).load(message.content)
+                    .placeholder(R.color.bg_screen).into(holder.imgChat)
+            } else {
+                holder.tvMsg.visibility = View.VISIBLE
+                holder.imgChat.visibility = View.GONE
+                holder.tvMsg.text = message.content
+            }
         }
     }
 
     override fun getItemCount(): Int = messages.size
+
     class SentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMsg: TextView = view.findViewById(R.id.tvMessageSent)
         val tvTime: TextView = view.findViewById(R.id.tvTimeSent)
+        val imgChat: ImageView = view.findViewById(R.id.imgChatSent)
     }
 
     class ReceivedViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMsg: TextView = view.findViewById(R.id.tvMessageReceived)
         val tvTime: TextView = view.findViewById(R.id.tvTimeReceived)
+        val imgChat: ImageView = view.findViewById(R.id.imgChatReceived)
     }
 
     fun updateMessages(newMessages: List<Message>) {
@@ -81,6 +102,16 @@ class ChatAdapter(
         messages.addAll(newMessages)
         notifyDataSetChanged()
     }
+
+    fun addOlderMessages(olderMessages: List<Message>) {
+        messages.addAll(0, olderMessages)
+        notifyItemRangeInserted(0, olderMessages.size)
+    }
+
+    fun getOldestMessageTimestamp(): Long? {
+        return messages.firstOrNull()?.timestamp
+    }
+
     private fun showDeleteDialog(view: View, message: Message) {
         AlertDialog.Builder(view.context)
             .setTitle("Xóa tin nhắn")
@@ -91,13 +122,5 @@ class ChatAdapter(
             }
             .setNegativeButton("Hủy") { dialog, _ -> dialog.dismiss() }
             .show()
-    }
-    fun addOlderMessages(olderMessages: List<Message>) {
-        messages.addAll(0, olderMessages) // thêm vào đầu danh sách
-        notifyItemRangeInserted(0, olderMessages.size)
-    }
-
-    fun getOldestMessageTimestamp(): Long? {
-        return messages.firstOrNull()?.timestamp
     }
 }
