@@ -1,4 +1,4 @@
-package com.example.socialnetwork.repository
+package com.example.socialnetwork.chat
 
 import android.util.Log
 import com.example.socialnetwork.core.models.Message
