@@ -33,7 +33,7 @@ data class Message(
     val receiverId: String = "",
     val content: String = "",
     val type: String = "TEXT", // hoặc "IMAGE"
-    val timestamp: Long = System.currentTimeMillis(),
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 
