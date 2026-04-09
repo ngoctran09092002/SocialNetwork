@@ -31,16 +31,18 @@ class ChatActivity : AppCompatActivity() {
     private val receiverAvatar by lazy { intent.getStringExtra("receiverAvatar") ?: "" }
 
     private lateinit var edtMessage: EditText
-
+    private lateinit var rvChat: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
+        //  Setup UI Toolbar
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
         findViewById<TextView>(R.id.tvReceiverName).text = receiverName
         val imgAvatar = findViewById<ImageView>(R.id.imgReceiverAvatar)
         if (receiverAvatar.isNotEmpty()) {
             Glide.with(this).load(receiverAvatar).circleCrop().into(imgAvatar)
         }
+        //  Firebase Auth
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -53,12 +55,12 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initChat() {
+
         if (uid.isEmpty() || receiverId.isEmpty()) {
             Log.e("CHAT", "UID hoặc receiverId chưa sẵn sàng")
             return
         }
-
-        val rvChat = findViewById<RecyclerView>(R.id.rvChat)
+        rvChat = findViewById(R.id.rvChat)
         edtMessage = findViewById(R.id.edtMessage)
         val btnSend = findViewById<ImageButton>(R.id.btnSend)
         val btnDelete = findViewById<ImageButton>(R.id.btnDelete)
@@ -68,9 +70,8 @@ class ChatActivity : AppCompatActivity() {
         }
 
         val layoutManager = LinearLayoutManager(this).apply {
-            reverseLayout = false
+            stackFromEnd = true
         }
-
         rvChat.layoutManager = layoutManager
         rvChat.adapter = chatAdapter
         rvChat.isNestedScrollingEnabled = true
@@ -101,6 +102,29 @@ class ChatActivity : AppCompatActivity() {
 
         btnDelete.setOnClickListener {
             viewModel.deleteAllMessagesForMe(uid, receiverId)
+        }
+        rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                if (firstVisible >= 0 && firstVisible <= 2) {
+                    loadOlderMessages()
+                }
+            }
+        })
+    }
+    private fun loadOlderMessages() {
+        // Lấy timestamp của tin nhắn cũ nhất hiện có
+        val oldestTimestamp = chatAdapter.getOldestMessageTimestamp() ?: return
+        viewModel.getOlderMessages(uid, receiverId, oldestTimestamp) { olderMessages ->
+            if (olderMessages.isNotEmpty()) {
+                val firstVisible = (rvChat.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                val offsetView = rvChat.getChildAt(0)
+                val offset = offsetView?.top ?: 0
+
+                chatAdapter.addOlderMessages(olderMessages)
+                (rvChat.layoutManager as LinearLayoutManager)
+                    .scrollToPositionWithOffset(firstVisible + olderMessages.size, offset)
+            }
         }
     }
 }

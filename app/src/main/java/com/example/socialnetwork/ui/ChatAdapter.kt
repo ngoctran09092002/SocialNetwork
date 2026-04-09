@@ -1,6 +1,7 @@
 package com.example.socialnetwork.ui
 
 import android.app.AlertDialog
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,7 +48,11 @@ class ChatAdapter(
             holder.tvMsg.text = message.content
             holder.tvTime.text = time
             holder.itemView.setOnLongClickListener {
-                showDeleteDialog(holder.itemView, message)
+                try {
+                    showDeleteDialog(holder.itemView, message)
+                } catch (e: Exception) {
+                    Log.e("CHAT_ADAPTER", "Error showing delete dialog", e)
+                }
                 true
             }
         } else if (holder is ReceivedViewHolder) {
@@ -86,5 +91,13 @@ class ChatAdapter(
             }
             .setNegativeButton("Hủy") { dialog, _ -> dialog.dismiss() }
             .show()
+    }
+    fun addOlderMessages(olderMessages: List<Message>) {
+        messages.addAll(0, olderMessages) // thêm vào đầu danh sách
+        notifyItemRangeInserted(0, olderMessages.size)
+    }
+
+    fun getOldestMessageTimestamp(): Long? {
+        return messages.firstOrNull()?.timestamp
     }
 }

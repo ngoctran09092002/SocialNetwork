@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.socialnetwork.core.models.Message
 import com.example.socialnetwork.repository.ChatRepositoryImpl
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
@@ -21,14 +22,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val messageMap = TreeMap<Long, Message>() // key = timestamp
 
     private val prefs = context.getSharedPreferences("chat_prefs", Context.MODE_PRIVATE)
-    private fun getDeletedMessageIds(chatRoomId: String): MutableSet<String> {
-        return prefs.getStringSet(chatRoomId, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-    }
-    private fun saveDeletedMessageId(chatRoomId: String, messageId: String) {
-        val set = getDeletedMessageIds(chatRoomId)
-        set.add(messageId)
-        prefs.edit().putStringSet(chatRoomId, set).apply()
-    }
+    private val firestore = FirebaseFirestore.getInstance()
 
     fun startObservingMessages(senderId: String, receiverId: String) {
 
@@ -51,6 +45,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     fun sendMessage(content: String, senderId: String, receiverId: String) {
+        Log.d("CHAT_DEBUG", "senderId: $senderId")
         if (content.isBlank()) return
 
         val timestamp = System.currentTimeMillis()
@@ -64,7 +59,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
         repository.sendMessage(message)
     }
-
+    private fun getDeletedMessageIds(chatRoomId: String): MutableSet<String> {
+        return prefs.getStringSet(chatRoomId, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+    }
+    private fun saveDeletedMessageId(chatRoomId: String, messageId: String) {
+        val set = getDeletedMessageIds(chatRoomId)
+        set.add(messageId)
+        prefs.edit().putStringSet(chatRoomId, set).apply()
+    }
     fun deleteAllMessagesForMe(senderId: String, receiverId: String) {
         val chatRoomId = if (senderId < receiverId)
             "${senderId}_${receiverId}"
@@ -82,6 +84,28 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         messageMap.entries.removeIf { it.value.id == message.id }
         _messages.postValue(messageMap.values.toList())
         saveDeletedMessageId(chatRoomId, message.id)
+    }
+    fun getOlderMessages(
+        uid: String,
+        receiverId: String,
+        oldestTimestamp: Long,
+        callback: (List<Message>) -> Unit
+    ) {
+        val chatRoomId = if (uid < receiverId)
+            "${uid}_${receiverId}"
+        else
+            "${receiverId}_${uid}"
+        val messagesRef = firestore.collection("messages")
+            .whereEqualTo("chatRoomId", chatRoomId)
+            .whereLessThan("timestamp", oldestTimestamp)
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .limit(10)
+
+        messagesRef.get().addOnSuccessListener { snapshot ->
+            val olderMessages = snapshot.toObjects(Message::class.java).sortedBy { it.timestamp }
+            Log.d("CHAT_DEBUG", "Older messages count: ${olderMessages.size}")
+            callback(olderMessages)
+        }
     }
     override fun onCleared() {
         super.onCleared()

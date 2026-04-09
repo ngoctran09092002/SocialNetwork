@@ -50,13 +50,6 @@ class ChatRepositoryImpl : IChatRepository {
             .addOnFailureListener { Log.e("CHAT", "Gửi tin nhắn thất bại: ${it.message}") }
             .addOnSuccessListener { Log.d("CHAT", "Tin nhắn đã gửi lên Firebase") }
     }
-
-    fun deleteAllMessages(chatRoomId: String) {
-        dbRef.child(chatRoomId).child("messages")
-            .removeValue()
-            .addOnSuccessListener { Log.d("ChatRepo", "Đã xóa toàn bộ tin nhắn") }
-            .addOnFailureListener { Log.e("ChatRepo", "Xóa thất bại: ${it.message}") }
-    }
     override fun removeListener() {
         activeListener?.let { activeRef?.removeEventListener(it) }
         activeListener = null
