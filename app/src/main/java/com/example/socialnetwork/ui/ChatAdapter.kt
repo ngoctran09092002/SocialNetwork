@@ -16,8 +16,13 @@ import java.util.*
 
 class ChatAdapter(
     private val myId: String,
+    private var otherAvatarUrl: String = "",
     private val onDeleteLocally: (Message) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    fun setOtherAvatar(url: String) {
+        otherAvatarUrl = url
+    }
 
     companion object {
         private const val TYPE_SENT = 1
@@ -66,6 +71,15 @@ class ChatAdapter(
             }
         } else if (holder is ReceivedViewHolder) {
             holder.tvTime.text = time
+            // Load avatar người gửi
+            if (otherAvatarUrl.isNotEmpty()) {
+                Glide.with(holder.itemView.context)
+                    .load(otherAvatarUrl)
+                    .placeholder(R.drawable.profile)
+                    .error(R.drawable.profile)
+                    .circleCrop()
+                    .into(holder.imgAvatar)
+            }
             holder.itemView.setOnLongClickListener {
                 showDeleteDialog(holder.itemView, message)
                 true
@@ -95,6 +109,7 @@ class ChatAdapter(
         val tvMsg: TextView = view.findViewById(R.id.tvMessageReceived)
         val tvTime: TextView = view.findViewById(R.id.tvTimeReceived)
         val imgChat: ImageView = view.findViewById(R.id.imgChatReceived)
+        val imgAvatar: ImageView = view.findViewById(R.id.imgSenderAvatar)
     }
 
     fun updateMessages(newMessages: List<Message>) {

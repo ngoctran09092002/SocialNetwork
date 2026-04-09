@@ -50,6 +50,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var blockedBar: View
     private var isBlockedByMe = false
     private var isBlockedByOther = false
+    private var chatRoomListener: com.google.firebase.firestore.ListenerRegistration? = null
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri ?: return@registerForActivityResult
@@ -108,7 +109,7 @@ class ChatActivity : AppCompatActivity() {
 
         btnChatSettings.setOnClickListener { showChatSettingsDialog() }
 
-        chatAdapter = ChatAdapter(uid) { message ->
+        chatAdapter = ChatAdapter(uid, receiverAvatar) { message ->
             viewModel.deleteMessageForEveryone(message, uid)
         }
 
@@ -163,72 +164,74 @@ class ChatActivity : AppCompatActivity() {
     }
 
     /**
-     * Kiểm tra trạng thái chatRoom: PENDING / ACCEPTED / chưa tồn tại
+     * Lắng nghe realtime trạng thái chatRoom — block/accept/reject cập nhật ngay lập tức
      */
     private fun checkChatRoomStatus() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val doc = db.collection("chatRooms").document(chatRoomId).get().await()
-                val room = doc.toObject(ChatRoom::class.java)
-                withContext(Dispatchers.Main) {
-                    // Kiểm tra block
-                    if (room != null) {
-                        isBlockedByMe = uid in room.blockedBy
-                        isBlockedByOther = receiverId in room.blockedBy
-                        if (isBlockedByMe) {
-                            inputBar.visibility = View.GONE
-                            requestBar.visibility = View.GONE
-                            blockedBar.visibility = View.VISIBLE
-                            blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã chặn người này"
-                            return@withContext
-                        }
-                        if (isBlockedByOther) {
-                            inputBar.visibility = View.GONE
-                            requestBar.visibility = View.GONE
-                            blockedBar.visibility = View.VISIBLE
-                            blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã bị chặn"
-                            return@withContext
-                        }
-                        blockedBar.visibility = View.GONE
-                    }
+        chatRoomListener = db.collection("chatRooms").document(chatRoomId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("ChatActivity", "Listen error: ${error.message}")
+                    return@addSnapshotListener
+                }
 
-                    if (room == null) {
-                        // Chưa có chatRoom → user mới, sẽ tạo khi gửi tin nhắn đầu tiên
-                        chatRoomStatus = ""
-                        inputBar.visibility = View.VISIBLE
+                val room = snapshot?.toObject(ChatRoom::class.java)
+
+                // Kiểm tra block
+                if (room != null) {
+                    isBlockedByMe = uid in room.blockedBy
+                    isBlockedByOther = receiverId in room.blockedBy
+                    if (isBlockedByMe) {
+                        inputBar.visibility = View.GONE
                         requestBar.visibility = View.GONE
-                    } else {
-                        chatRoomStatus = room.status
-                        when {
-                            room.status == ChatRoom.STATUS_REJECTED -> {
-                                // Đã bị từ chối trước đó → cho phép gửi lại (sẽ reset thành PENDING)
-                                chatRoomStatus = ""
-                                inputBar.visibility = View.VISIBLE
-                                requestBar.visibility = View.GONE
-                                Toast.makeText(this@ChatActivity, "Cuộc trò chuyện trước đã bị từ chối. Gửi tin nhắn để gửi lời mời lại.", Toast.LENGTH_LONG).show()
-                            }
-                            room.isPendingForMe(uid) -> {
-                                // Mình là người nhận → hiện accept/reject, ẩn input
-                                requestBar.visibility = View.VISIBLE
-                                inputBar.visibility = View.GONE
-                            }
-                            room.status == ChatRoom.STATUS_PENDING && room.initiatorId == uid -> {
-                                // Mình là người gửi, đang chờ đối phương chấp nhận
-                                inputBar.visibility = View.VISIBLE
-                                requestBar.visibility = View.GONE
-                                Toast.makeText(this@ChatActivity, "Đang chờ đối phương chấp nhận", Toast.LENGTH_SHORT).show()
-                            }
-                            room.status == ChatRoom.STATUS_ACCEPTED -> {
-                                inputBar.visibility = View.VISIBLE
-                                requestBar.visibility = View.GONE
-                            }
+                        blockedBar.visibility = View.VISIBLE
+                        blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã chặn người này"
+                        return@addSnapshotListener
+                    }
+                    if (isBlockedByOther) {
+                        inputBar.visibility = View.GONE
+                        requestBar.visibility = View.GONE
+                        blockedBar.visibility = View.VISIBLE
+                        blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã bị chặn"
+                        return@addSnapshotListener
+                    }
+                    blockedBar.visibility = View.GONE
+                }
+
+                if (room == null) {
+                    chatRoomStatus = ""
+                    inputBar.visibility = View.VISIBLE
+                    requestBar.visibility = View.GONE
+                } else {
+                    chatRoomStatus = room.status
+                    when {
+                        room.status == ChatRoom.STATUS_REJECTED -> {
+                            chatRoomStatus = ""
+                            inputBar.visibility = View.VISIBLE
+                            requestBar.visibility = View.GONE
+                        }
+                        room.isPendingForMe(uid) -> {
+                            requestBar.visibility = View.VISIBLE
+                            inputBar.visibility = View.GONE
+                        }
+                        room.status == ChatRoom.STATUS_PENDING && room.initiatorId == uid -> {
+                            inputBar.visibility = View.VISIBLE
+                            requestBar.visibility = View.GONE
+                        }
+                        room.status == ChatRoom.STATUS_ACCEPTED -> {
+                            inputBar.visibility = View.VISIBLE
+                            requestBar.visibility = View.GONE
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("ChatActivity", "checkChatRoomStatus error: ${e.message}")
+                if (inputBar.visibility == View.VISIBLE) {
+                    edtMessage.requestFocus()
+                }
             }
-        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        chatRoomListener?.remove()
     }
 
     /**

@@ -7,10 +7,12 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
+import com.bumptech.glide.Glide
 import com.example.socialnetwork.util.CloudinaryUploader
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -39,10 +41,30 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         super.onViewCreated(view, savedInstanceState)
 
         val imgPreview   = view.findViewById<ImageView>(R.id.imgPreview)
+        val imgMyAvatar  = view.findViewById<ImageView>(R.id.imgMyAvatar)
+        val tvMyName     = view.findViewById<TextView>(R.id.tvMyName)
         val btnPickImage = view.findViewById<View>(R.id.btnPickImage)
         val edtCaption   = view.findViewById<EditText>(R.id.edtCaption)
         val btnPost      = view.findViewById<View>(R.id.btnPost)
         val progressBar  = view.findViewById<ProgressBar>(R.id.progressBar)
+
+        // Load avatar + tên từ Firestore
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            FirebaseFirestore.getInstance().collection("users").document(uid)
+                .get()
+                .addOnSuccessListener { doc ->
+                    tvMyName.text = doc.getString("name") ?: "Bạn"
+                    val avatarUrl = doc.getString("avatarUrl") ?: ""
+                    if (avatarUrl.isNotEmpty() && isAdded) {
+                        Glide.with(requireContext())
+                            .load(avatarUrl)
+                            .placeholder(R.drawable.profile)
+                            .circleCrop()
+                            .into(imgMyAvatar)
+                    }
+                }
+        }
 
         btnPickImage.setOnClickListener {
             pickImage.launch("image/*")

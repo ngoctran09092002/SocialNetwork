@@ -89,6 +89,18 @@ class FirebaseUserRepository : IUserRepository {
     }
 
     override suspend fun getFriendCount(userId: String): Int {
-        return 0
+        return try {
+            val snap1 = db.collection("chatRooms")
+                .whereEqualTo("user1Id", userId)
+                .whereEqualTo("status", "ACCEPTED")
+                .get().await()
+            val snap2 = db.collection("chatRooms")
+                .whereEqualTo("user2Id", userId)
+                .whereEqualTo("status", "ACCEPTED")
+                .get().await()
+            snap1.size() + snap2.size()
+        } catch (e: Exception) {
+            0
+        }
     }
 }

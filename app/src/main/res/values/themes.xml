@@ -7,6 +7,7 @@
         <item name="android:colorBackground">@color/bg_screen</item>
         <item name="android:windowBackground">@color/bg_screen</item>
         <item name="colorControlHighlight">@color/primary_light</item>
+        <item name="android:statusBarColor">@color/primary</item>
     </style>
 
     <style name="Theme.SocialNetwork" parent="Base.Theme.SocialNetwork" />
