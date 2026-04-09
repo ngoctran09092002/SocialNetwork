@@ -18,7 +18,7 @@ interface IMediaService {
 
 // Node 2 (Feed) implement. Xử lý logic tải bài viết.
 interface IFeedRepository {
-    suspend fun getTimelinePosts(): List<Post>
+    suspend fun getTimelinePosts(currentUserId: String = ""): List<Post>
     suspend fun createPost(post: Post): Boolean
     suspend fun likePost(postId: String, userId: String)
     suspend fun addComment(postId: String, comment: Comment)

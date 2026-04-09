@@ -14,21 +14,44 @@ class FeedRepository : IFeedRepository {
     private val db = FirebaseFirestore.getInstance()
     private val TAG = "FeedRepository"
 
-    override suspend fun getTimelinePosts(): List<Post> {
+    override suspend fun getTimelinePosts(currentUserId: String): List<Post> {
         return try {
-            Log.d(TAG, "Loading posts from Firestore...")
+            // Lấy danh sách bạn bè (chatRoom ACCEPTED)
+            val friendIds = mutableSetOf<String>()
+            if (currentUserId.isNotEmpty()) {
+                friendIds.add(currentUserId) // Luôn thấy bài của mình
+
+                val snap1 = db.collection("chatRooms")
+                    .whereEqualTo("user1Id", currentUserId)
+                    .whereEqualTo("status", "ACCEPTED")
+                    .get().await()
+                snap1.documents.forEach { doc ->
+                    doc.getString("user2Id")?.let { friendIds.add(it) }
+                }
+
+                val snap2 = db.collection("chatRooms")
+                    .whereEqualTo("user2Id", currentUserId)
+                    .whereEqualTo("status", "ACCEPTED")
+                    .get().await()
+                snap2.documents.forEach { doc ->
+                    doc.getString("user1Id")?.let { friendIds.add(it) }
+                }
+            }
+
+            Log.d(TAG, "Friend IDs: $friendIds")
+
+            // Load tất cả bài post rồi filter theo friendIds
             val snapshot = db.collection("posts")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
 
-            Log.d(TAG, "Got ${snapshot.size()} documents from Firestore")
-
             val posts = snapshot.toObjects(Post::class.java)
-            posts.forEach { post ->
-                Log.d(TAG, "Post: id=${post.id}, caption=${post.caption}, likes=${post.likesCount}")
-            }
+                .filter { post ->
+                    friendIds.isEmpty() || post.authorId in friendIds
+                }
 
+            Log.d(TAG, "Loaded ${posts.size} posts from friends")
             posts
         } catch (e: Exception) {
             Log.e(TAG, "Error loading posts: ${e.message}", e)

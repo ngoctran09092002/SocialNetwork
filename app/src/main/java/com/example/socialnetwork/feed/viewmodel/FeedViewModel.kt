@@ -39,7 +39,7 @@ class FeedViewModel(
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val postsList = feedRepository.getTimelinePosts()
+                val postsList = feedRepository.getTimelinePosts(currentUserId)
                 _posts.value = postsList
                 _error.value = null
             } catch (e: Exception) {

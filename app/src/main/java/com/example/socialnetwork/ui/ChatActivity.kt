@@ -126,6 +126,8 @@ class ChatActivity : AppCompatActivity() {
             if (isAtBottom && chatAdapter.itemCount > 0) {
                 rvChat.scrollToPosition(chatAdapter.itemCount - 1)
             }
+            // Giới hạn 2 tin nhắn khi PENDING + mình là người gửi
+            checkPendingMessageLimit(list)
         }
 
         val sendAction = {
@@ -133,15 +135,18 @@ class ChatActivity : AppCompatActivity() {
             if (content.isNotEmpty()) {
                 sendMessageWithRoomCheck(content, "TEXT")
                 edtMessage.text.clear()
+                // Giữ focus + keyboard mở sau khi gửi
+                edtMessage.requestFocus()
             }
         }
 
         btnSend.setOnClickListener { sendAction() }
 
-        edtMessage.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
+        edtMessage.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
+                (event != null && event.keyCode == android.view.KeyEvent.KEYCODE_ENTER)) {
                 sendAction()
-                true
+                true // consume event → keyboard không dismiss
             } else false
         }
 
@@ -220,12 +225,11 @@ class ChatActivity : AppCompatActivity() {
                         room.status == ChatRoom.STATUS_ACCEPTED -> {
                             inputBar.visibility = View.VISIBLE
                             requestBar.visibility = View.GONE
+                            blockedBar.visibility = View.GONE
                         }
                     }
                 }
-                if (inputBar.visibility == View.VISIBLE) {
-                    edtMessage.requestFocus()
-                }
+                // Không gọi requestFocus() ở đây — tránh flicker keyboard
             }
     }
 
@@ -427,6 +431,28 @@ class ChatActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private val MAX_PENDING_MESSAGES = 2
+
+    private fun checkPendingMessageLimit(messages: List<com.example.socialnetwork.core.models.Message>) {
+        if (chatRoomStatus != ChatRoom.STATUS_PENDING) return
+        if (isBlockedByMe || isBlockedByOther) return
+
+        // Đếm tin nhắn mình gửi
+        val mySentCount = messages.count { it.senderId == uid }
+
+        // Nếu mình là initiator và đã gửi >= 2 tin → ẩn input
+        db.collection("chatRooms").document(chatRoomId).get()
+            .addOnSuccessListener { doc ->
+                val room = doc.toObject(ChatRoom::class.java) ?: return@addOnSuccessListener
+                if (room.status == ChatRoom.STATUS_PENDING && room.initiatorId == uid && mySentCount >= MAX_PENDING_MESSAGES) {
+                    inputBar.visibility = View.GONE
+                    blockedBar.visibility = View.VISIBLE
+                    blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text =
+                        "Đã gửi $MAX_PENDING_MESSAGES tin nhắn. Đợi đối phương chấp nhận để nhắn tiếp."
+                }
+            }
     }
 
     private fun buildChatRoomId(a: String, b: String): String {
