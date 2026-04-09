@@ -7,7 +7,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.socialnetwork.core.models.Message
-import com.example.socialnetwork.repository.ChatRepositoryImpl
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
