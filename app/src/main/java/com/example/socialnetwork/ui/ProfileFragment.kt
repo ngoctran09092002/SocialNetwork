@@ -98,7 +98,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             try {
                 val userId = currentUserId ?: return@launch
 
-                // Kiểm tra xem đã like chưa
                 val db = FirebaseFirestore.getInstance()
                 val likeDoc = db.collection("posts")
                     .document(post.id)
@@ -108,7 +107,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     .await()
 
                 val isCurrentlyLiked = likeDoc.exists()
-                // Gọi repository để like/unlike
                 feedRepository.likePost(post.id, userId)
 
                 // Cập nhật UI

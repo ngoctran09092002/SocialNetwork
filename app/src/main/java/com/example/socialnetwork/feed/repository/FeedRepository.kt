@@ -41,12 +41,13 @@ class FeedRepository : IFeedRepository {
         return try {
             val snapshot = db.collection("posts")
                 .whereEqualTo("authorId", userId)
-//                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
 
-            snapshot.toObjects(Post::class.java)
+            val posts = snapshot.toObjects(Post::class.java)
+            posts.sortedByDescending { it.timestamp }
         } catch (e: Exception) {
+            Log.e("FeedRepository", "Error fetching posts: ${e.message}", e)
             emptyList()
         }
     }
