@@ -47,6 +47,7 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
         val recyclerChats = view.findViewById<RecyclerView>(R.id.recyclerChats)
         val txtPendingHeader = view.findViewById<TextView>(R.id.txtPendingHeader)
         val txtChatsHeader = view.findViewById<TextView>(R.id.txtChatsHeader)
+        val emptyState = view.findViewById<View>(R.id.emptyState)
         val txtEmpty = view.findViewById<TextView>(R.id.txtEmpty)
         val progressBar = view.findViewById<ProgressBar>(R.id.progressBar)
 
@@ -59,24 +60,22 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
         recyclerSearchResults.adapter = searchAdapter
 
         // --- Pending requests adapter ---
-        val pendingAdapter = ChatRoomAdapter(currentUserId) { room ->
-            openChat(
-                room.getOtherUserId(currentUserId),
-                room.getOtherUserName(currentUserId),
-                room.getOtherUserAvatar(currentUserId)
-            )
-        }
+        val pendingAdapter = ChatRoomAdapter(currentUserId,
+            onClick = { room ->
+                openChat(room.getOtherUserId(currentUserId), room.getOtherUserName(currentUserId), room.getOtherUserAvatar(currentUserId))
+            },
+            onLongClick = { room -> showDeleteDialog(room) }
+        )
         recyclerPending.layoutManager = LinearLayoutManager(requireContext())
         recyclerPending.adapter = pendingAdapter
 
         // --- Accepted chats adapter ---
-        val chatsAdapter = ChatRoomAdapter(currentUserId) { room ->
-            openChat(
-                room.getOtherUserId(currentUserId),
-                room.getOtherUserName(currentUserId),
-                room.getOtherUserAvatar(currentUserId)
-            )
-        }
+        val chatsAdapter = ChatRoomAdapter(currentUserId,
+            onClick = { room ->
+                openChat(room.getOtherUserId(currentUserId), room.getOtherUserName(currentUserId), room.getOtherUserAvatar(currentUserId))
+            },
+            onLongClick = { room -> showDeleteDialog(room) }
+        )
         recyclerChats.layoutManager = LinearLayoutManager(requireContext())
         recyclerChats.adapter = chatsAdapter
 
@@ -98,7 +97,7 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
         })
 
         // --- Load chat rooms ---
-        loadChatRooms(pendingAdapter, chatsAdapter, txtPendingHeader, txtChatsHeader, txtEmpty, progressBar)
+        loadChatRooms(pendingAdapter, chatsAdapter, txtPendingHeader, txtChatsHeader, emptyState, progressBar)
     }
 
     override fun onResume() {
@@ -109,10 +108,10 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
             val chatsAdapter = it.findViewById<RecyclerView>(R.id.recyclerChats)?.adapter as? ChatRoomAdapter
             val txtPendingHeader = it.findViewById<TextView>(R.id.txtPendingHeader)
             val txtChatsHeader = it.findViewById<TextView>(R.id.txtChatsHeader)
-            val txtEmpty = it.findViewById<TextView>(R.id.txtEmpty)
+            val emptyState = it.findViewById<View>(R.id.emptyState)
             val progressBar = it.findViewById<ProgressBar>(R.id.progressBar)
             if (pendingAdapter != null && chatsAdapter != null) {
-                loadChatRooms(pendingAdapter, chatsAdapter, txtPendingHeader!!, txtChatsHeader!!, txtEmpty!!, progressBar!!)
+                loadChatRooms(pendingAdapter, chatsAdapter, txtPendingHeader!!, txtChatsHeader!!, emptyState!!, progressBar!!)
             }
         }
     }
@@ -154,11 +153,11 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
         chatsAdapter: ChatRoomAdapter,
         txtPendingHeader: TextView,
         txtChatsHeader: TextView,
-        txtEmpty: TextView,
+        emptyState: View,
         progressBar: ProgressBar
     ) {
         progressBar.visibility = View.VISIBLE
-        txtEmpty.visibility = View.GONE
+        emptyState.visibility = View.GONE
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -172,6 +171,7 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
 
                 val allRooms = (snap1.toObjects(ChatRoom::class.java) + snap2.toObjects(ChatRoom::class.java))
                     .filter { it.status != ChatRoom.STATUS_REJECTED }
+                    .filter { currentUserId !in it.deletedBy }
                     .sortedByDescending { it.lastMessageTime }
 
                 val pending = allRooms.filter { it.isPendingForMe(currentUserId) }
@@ -192,13 +192,43 @@ class ChatListFragment : Fragment(R.layout.fragment_chat_list) {
                     chatsAdapter.updateList(chats)
                     txtChatsHeader.visibility = if (chats.isNotEmpty()) View.VISIBLE else View.GONE
 
-                    txtEmpty.visibility = if (pending.isEmpty() && chats.isEmpty()) View.VISIBLE else View.GONE
+                    emptyState.visibility = if (pending.isEmpty() && chats.isEmpty()) View.VISIBLE else View.GONE
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    txtEmpty.visibility = View.VISIBLE
-                    txtEmpty.text = "Lỗi tải danh sách chat"
+                    emptyState.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun showDeleteDialog(room: ChatRoom) {
+        val otherName = room.getOtherUserName(currentUserId)
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Xóa đoạn chat")
+            .setMessage("Xóa cuộc trò chuyện với $otherName?")
+            .setPositiveButton("Xóa") { _, _ -> deleteChatRoom(room) }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun deleteChatRoom(room: ChatRoom) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Thêm uid vào deletedBy — chỉ ẩn phía mình, đối phương vẫn thấy
+                val updated = room.deletedBy.toMutableList().apply { add(currentUserId) }
+                db.collection("chatRooms").document(room.chatRoomId)
+                    .update("deletedBy", updated).await()
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Đã xóa đoạn chat", Toast.LENGTH_SHORT).show()
+                    // Refresh list
+                    onResume()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }

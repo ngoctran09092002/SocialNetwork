@@ -14,7 +14,8 @@ import java.util.*
 
 class ChatRoomAdapter(
     private val myId: String,
-    private val onClick: (ChatRoom) -> Unit
+    private val onClick: (ChatRoom) -> Unit,
+    private val onLongClick: (ChatRoom) -> Unit = {}
 ) : RecyclerView.Adapter<ChatRoomAdapter.ViewHolder>() {
 
     private val items = mutableListOf<ChatRoom>()
@@ -45,31 +46,40 @@ class ChatRoomAdapter(
             holder.txtTime.text = ""
         }
 
-        // Pending badge
+        // Pending badge — chip style
         when {
             room.isPendingForMe(myId) -> {
                 holder.txtPendingBadge.visibility = View.VISIBLE
-                holder.txtPendingBadge.text = "Chờ chấp nhận"
+                holder.txtPendingBadge.text = "Lời mời"
+                holder.txtPendingBadge.setBackgroundResource(R.drawable.bg_badge_request)
+                holder.txtPendingBadge.setTextColor(holder.itemView.context.getColor(R.color.primary))
             }
             room.status == ChatRoom.STATUS_PENDING && room.initiatorId == myId -> {
                 holder.txtPendingBadge.visibility = View.VISIBLE
                 holder.txtPendingBadge.text = "Đang chờ"
-                holder.txtPendingBadge.setTextColor(
-                    holder.itemView.context.getColor(R.color.text_secondary)
-                )
+                holder.txtPendingBadge.setBackgroundResource(R.drawable.bg_badge_pending)
+                holder.txtPendingBadge.setTextColor(holder.itemView.context.getColor(R.color.text_secondary))
             }
             else -> holder.txtPendingBadge.visibility = View.GONE
         }
 
         val avatarUrl = room.getOtherUserAvatar(myId)
-        Glide.with(holder.itemView.context)
-            .load(avatarUrl)
-            .placeholder(R.drawable.profile)
-            .error(R.drawable.profile)
-            .circleCrop()
-            .into(holder.imgAvatar)
+        if (avatarUrl.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(avatarUrl)
+                .placeholder(R.drawable.profile)
+                .error(R.drawable.profile)
+                .circleCrop()
+                .into(holder.imgAvatar)
+        } else {
+            holder.imgAvatar.setImageResource(R.drawable.profile)
+        }
 
         holder.itemView.setOnClickListener { onClick(room) }
+        holder.itemView.setOnLongClickListener {
+            onLongClick(room)
+            true
+        }
     }
 
     override fun getItemCount() = items.size

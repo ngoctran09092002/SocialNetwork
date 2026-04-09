@@ -13,7 +13,9 @@ data class ChatRoom(
     val user1Name: String = "",
     val user2Name: String = "",
     val user1Avatar: String = "",
-    val user2Avatar: String = ""
+    val user2Avatar: String = "",
+    val deletedBy: List<String> = emptyList(),
+    val blockedBy: List<String> = emptyList()
 ) {
     companion object {
         const val STATUS_PENDING = "PENDING"

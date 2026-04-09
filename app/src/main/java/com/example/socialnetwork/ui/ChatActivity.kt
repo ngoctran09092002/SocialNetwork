@@ -47,6 +47,9 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var requestBar: View
     private var chatRoomId = ""
     private var chatRoomStatus = ""
+    private lateinit var blockedBar: View
+    private var isBlockedByMe = false
+    private var isBlockedByOther = false
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri ?: return@registerForActivityResult
@@ -98,12 +101,15 @@ class ChatActivity : AppCompatActivity() {
         edtMessage = findViewById(R.id.edtMessage)
         inputBar = findViewById(R.id.inputBar)
         requestBar = findViewById(R.id.requestBar)
+        blockedBar = findViewById(R.id.blockedBar)
         val btnSend = findViewById<ImageButton>(R.id.btnSend)
-        val btnDelete = findViewById<ImageButton>(R.id.btnDelete)
         val btnPickImage = findViewById<ImageButton>(R.id.btnPickImage)
+        val btnChatSettings = findViewById<ImageButton>(R.id.btnChatSettings)
+
+        btnChatSettings.setOnClickListener { showChatSettingsDialog() }
 
         chatAdapter = ChatAdapter(uid) { message ->
-            viewModel.deleteMessageForMeLocally(message, uid)
+            viewModel.deleteMessageForEveryone(message, uid)
         }
 
         val layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
@@ -121,7 +127,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-        btnSend.setOnClickListener {
+        val sendAction = {
             val content = edtMessage.text.toString().trim()
             if (content.isNotEmpty()) {
                 sendMessageWithRoomCheck(content, "TEXT")
@@ -129,11 +135,16 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-        btnPickImage.setOnClickListener { pickImage.launch("image/*") }
+        btnSend.setOnClickListener { sendAction() }
 
-        btnDelete.setOnClickListener {
-            viewModel.deleteAllMessagesForMe(uid, receiverId)
+        edtMessage.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
+                sendAction()
+                true
+            } else false
         }
+
+        btnPickImage.setOnClickListener { pickImage.launch("image/*") }
 
         // Accept / Reject buttons
         requestBar.findViewById<View>(R.id.btnAccept)?.setOnClickListener {
@@ -160,6 +171,27 @@ class ChatActivity : AppCompatActivity() {
                 val doc = db.collection("chatRooms").document(chatRoomId).get().await()
                 val room = doc.toObject(ChatRoom::class.java)
                 withContext(Dispatchers.Main) {
+                    // Kiểm tra block
+                    if (room != null) {
+                        isBlockedByMe = uid in room.blockedBy
+                        isBlockedByOther = receiverId in room.blockedBy
+                        if (isBlockedByMe) {
+                            inputBar.visibility = View.GONE
+                            requestBar.visibility = View.GONE
+                            blockedBar.visibility = View.VISIBLE
+                            blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã chặn người này"
+                            return@withContext
+                        }
+                        if (isBlockedByOther) {
+                            inputBar.visibility = View.GONE
+                            requestBar.visibility = View.GONE
+                            blockedBar.visibility = View.VISIBLE
+                            blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã bị chặn"
+                            return@withContext
+                        }
+                        blockedBar.visibility = View.GONE
+                    }
+
                     if (room == null) {
                         // Chưa có chatRoom → user mới, sẽ tạo khi gửi tin nhắn đầu tiên
                         chatRoomStatus = ""
@@ -168,6 +200,13 @@ class ChatActivity : AppCompatActivity() {
                     } else {
                         chatRoomStatus = room.status
                         when {
+                            room.status == ChatRoom.STATUS_REJECTED -> {
+                                // Đã bị từ chối trước đó → cho phép gửi lại (sẽ reset thành PENDING)
+                                chatRoomStatus = ""
+                                inputBar.visibility = View.VISIBLE
+                                requestBar.visibility = View.GONE
+                                Toast.makeText(this@ChatActivity, "Cuộc trò chuyện trước đã bị từ chối. Gửi tin nhắn để gửi lời mời lại.", Toast.LENGTH_LONG).show()
+                            }
                             room.isPendingForMe(uid) -> {
                                 // Mình là người nhận → hiện accept/reject, ẩn input
                                 requestBar.visibility = View.VISIBLE
@@ -205,8 +244,11 @@ class ChatActivity : AppCompatActivity() {
                 val docRef = db.collection("chatRooms").document(chatRoomId)
                 val doc = docRef.get().await()
 
-                if (!doc.exists()) {
-                    // Tạo chatRoom mới với status PENDING
+                val existingRoom = doc.toObject(ChatRoom::class.java)
+                val needsNewRoom = !doc.exists() || existingRoom?.status == ChatRoom.STATUS_REJECTED
+
+                if (needsNewRoom) {
+                    // Tạo chatRoom mới hoặc reset từ REJECTED → PENDING
                     val myProfile = db.collection("users").document(uid).get().await()
                     val receiverProfile = db.collection("users").document(receiverId).get().await()
 
@@ -236,14 +278,19 @@ class ChatActivity : AppCompatActivity() {
                         chatRoomStatus = ChatRoom.STATUS_PENDING
                     }
                 } else {
-                    // Cập nhật last message
-                    docRef.update(
-                        mapOf(
-                            "lastMessage" to content,
-                            "lastMessageType" to type,
-                            "lastMessageTime" to System.currentTimeMillis()
-                        )
-                    ).await()
+                    // Cập nhật last message + xóa UID khỏi deletedBy (nếu có) để chat hiện lại
+                    val updates = mutableMapOf<String, Any>(
+                        "lastMessage" to content,
+                        "lastMessageType" to type,
+                        "lastMessageTime" to System.currentTimeMillis()
+                    )
+                    // Xóa mình khỏi deletedBy nếu đã xóa chat trước đó
+                    val currentDeleted = existingRoom?.deletedBy?.toMutableList() ?: mutableListOf()
+                    if (uid in currentDeleted) {
+                        currentDeleted.remove(uid)
+                        updates["deletedBy"] = currentDeleted
+                    }
+                    docRef.update(updates).await()
                 }
             } catch (e: Exception) {
                 Log.e("ChatActivity", "updateChatRoom error: ${e.message}")
@@ -297,6 +344,84 @@ class ChatActivity : AppCompatActivity() {
                 val offset = offsetView?.top ?: 0
                 chatAdapter.addOlderMessages(olderMessages)
                 lm.scrollToPositionWithOffset(firstVisible + olderMessages.size, offset)
+            }
+        }
+    }
+
+    private fun showChatSettingsDialog() {
+        val options = if (isBlockedByMe) {
+            arrayOf("Bỏ chặn người này")
+        } else {
+            arrayOf("Chặn người này")
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(receiverName)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> if (isBlockedByMe) unblockUser() else blockUser()
+                }
+            }
+            .setNegativeButton("Đóng", null)
+            .show()
+    }
+
+    private fun blockUser() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Chặn $receiverName?")
+            .setMessage("Người này sẽ không thể gửi tin nhắn cho bạn.")
+            .setPositiveButton("Chặn") { _, _ ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val docRef = db.collection("chatRooms").document(chatRoomId)
+                        val doc = docRef.get().await()
+                        if (doc.exists()) {
+                            val current = doc.toObject(ChatRoom::class.java)
+                            val updated = current?.blockedBy?.toMutableList() ?: mutableListOf()
+                            if (uid !in updated) updated.add(uid)
+                            docRef.update("blockedBy", updated).await()
+                        } else {
+                            // Tạo chatRoom mới nếu chưa có
+                            docRef.set(mapOf("blockedBy" to listOf(uid), "chatRoomId" to chatRoomId)).await()
+                        }
+                        withContext(Dispatchers.Main) {
+                            isBlockedByMe = true
+                            inputBar.visibility = View.GONE
+                            requestBar.visibility = View.GONE
+                            blockedBar.visibility = View.VISIBLE
+                            blockedBar.findViewById<TextView>(R.id.txtBlockedMessage)?.text = "Bạn đã chặn người này"
+                            Toast.makeText(this@ChatActivity, "Đã chặn $receiverName", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@ChatActivity, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun unblockUser() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val docRef = db.collection("chatRooms").document(chatRoomId)
+                val doc = docRef.get().await()
+                val current = doc.toObject(ChatRoom::class.java)
+                val updated = current?.blockedBy?.toMutableList() ?: mutableListOf()
+                updated.remove(uid)
+                docRef.update("blockedBy", updated).await()
+                withContext(Dispatchers.Main) {
+                    isBlockedByMe = false
+                    blockedBar.visibility = View.GONE
+                    inputBar.visibility = View.VISIBLE
+                    Toast.makeText(this@ChatActivity, "Đã bỏ chặn $receiverName", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ChatActivity, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

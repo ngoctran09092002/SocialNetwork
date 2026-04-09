@@ -13,6 +13,8 @@ class ChatRepositoryImpl : IChatRepository {
     private var activeListener: ChildEventListener? = null
     private var activeRef: Query? = null
 
+    var onMessageRemoved: ((String) -> Unit)? = null
+
     override fun observeMessages(chatRoomId: String, onNewMessage: (Message) -> Unit) {
         removeListener()
         Log.d("ChatRepo", "=== observeMessages path: chats/$chatRoomId/messages ===")
@@ -41,7 +43,10 @@ class ChatRepositoryImpl : IChatRepository {
                 }
             }
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                val key = snapshot.key ?: return
+                onMessageRemoved?.invoke(key)
+            }
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {
                 Log.e("ChatRepo", "Lỗi lắng nghe DB: ${error.code} - ${error.message}")
@@ -95,6 +100,12 @@ class ChatRepositoryImpl : IChatRepository {
                     callback(emptyList())
                 }
             })
+    }
+
+    fun deleteMessage(chatRoomId: String, messageId: String) {
+        dbRef.child(chatRoomId).child("messages").child(messageId).removeValue()
+            .addOnSuccessListener { Log.d("ChatRepo", "Đã xóa tin nhắn $messageId") }
+            .addOnFailureListener { Log.e("ChatRepo", "Xóa thất bại: ${it.message}") }
     }
 
     override fun removeListener() {

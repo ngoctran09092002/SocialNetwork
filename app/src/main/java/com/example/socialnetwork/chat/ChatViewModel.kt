@@ -30,6 +30,12 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         currentChatRoomId = buildChatRoomId(senderId, receiverId)
         Log.d("CHAT", "OBSERVE chatId: $currentChatRoomId")
 
+        // Lắng nghe tin nhắn bị xóa (realtime cả hai bên)
+        repository.onMessageRemoved = { removedId ->
+            messageMap.entries.removeIf { it.value.id == removedId }
+            _messages.postValue(messageMap.values.toList())
+        }
+
         repository.observeMessages(currentChatRoomId) { newMessage ->
             val deletedIds = getDeletedMessageIds(currentChatRoomId)
             if (newMessage.id in deletedIds) return@observeMessages
@@ -75,11 +81,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         _messages.postValue(emptyList())
     }
 
-    fun deleteMessageForMeLocally(message: Message, senderId: String) {
-        val chatRoomId = buildChatRoomId(senderId, message.receiverId)
+    fun deleteMessageForEveryone(message: Message, myId: String) {
+        val otherId = if (message.senderId == myId) message.receiverId else message.senderId
+        val chatRoomId = buildChatRoomId(myId, otherId)
+        // Xóa khỏi Firebase → cả hai bên mất
+        repository.deleteMessage(chatRoomId, message.id)
+        // Xóa khỏi local ngay lập tức
         messageMap.entries.removeIf { it.value.id == message.id }
         _messages.postValue(messageMap.values.toList())
-        saveDeletedMessageId(chatRoomId, message.id)
     }
 
     private fun buildChatRoomId(a: String, b: String): String {

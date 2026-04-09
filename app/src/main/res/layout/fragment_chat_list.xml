@@ -6,64 +6,62 @@
     android:orientation="vertical"
     android:background="@color/bg_screen">
 
-    <!-- Header -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/bg_surface"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="12dp"
-        android:elevation="2dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Tin nhắn"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <!-- Search bar -->
+    <!-- Header + Search (sticky top, white bg, elevation) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:background="@color/bg_surface"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:elevation="2dp"
         android:paddingBottom="10dp">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- Title -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:boxBackgroundColor="@color/bg_screen"
-            app:boxBackgroundMode="filled"
-            app:boxCornerRadiusBottomEnd="22dp"
-            app:boxCornerRadiusBottomStart="22dp"
-            app:boxCornerRadiusTopEnd="22dp"
-            app:boxCornerRadiusTopStart="22dp"
-            app:boxStrokeWidth="0dp"
-            app:boxStrokeWidthFocused="0dp"
-            app:hintEnabled="false"
-            app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:startIconTint="@color/text_secondary">
+            android:text="Tin nhắn"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="10dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
+        <!-- Search bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/bg_input"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:src="@android:drawable/ic_menu_search"
+                app:tint="@color/text_hint" />
+
+            <EditText
                 android:id="@+id/edtSearch"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:hint="Tìm người dùng để nhắn tin..."
-                android:textColor="@color/text_primary"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Tìm theo tên hoặc email..."
                 android:textColorHint="@color/text_hint"
+                android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:imeOptions="actionSearch"
-                android:inputType="text" />
+                android:inputType="text"
+                android:singleLine="true" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -73,18 +71,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="@color/bg_screen"
         android:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Kết quả tìm kiếm"
+            android:text="KẾT QUẢ TÌM KIẾM"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:textStyle="bold"
+            android:textSize="11sp"
+            android:letterSpacing="0.08"
             android:paddingStart="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp" />
+            android:paddingTop="12dp"
+            android:paddingBottom="6dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerSearchResults"
@@ -100,63 +99,92 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <!-- Pending requests section -->
-            <TextView
-                android:id="@+id/txtPendingHeader"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Lời mời nhắn tin"
-                android:textColor="@color/primary"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:paddingStart="16dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="4dp"
-                android:visibility="gone" />
+                android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerPending"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:visibility="gone" />
+                <!-- Pending requests section -->
+                <TextView
+                    android:id="@+id/txtPendingHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LỜI MỜI NHẮN TIN"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="6dp"
+                    android:background="@color/bg_screen"
+                    android:visibility="gone" />
 
-            <!-- Accepted chats section -->
-            <TextView
-                android:id="@+id/txtChatsHeader"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Đoạn chat"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:paddingStart="16dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="4dp"
-                android:visibility="gone" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerPending"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerChats"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                <!-- Accepted chats section -->
+                <TextView
+                    android:id="@+id/txtChatsHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ĐOẠN CHAT"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="6dp"
+                    android:background="@color/bg_screen"
+                    android:visibility="gone" />
 
-        </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerChats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
 
         <!-- Empty state -->
-        <TextView
-            android:id="@+id/txtEmpty"
+        <LinearLayout
+            android:id="@+id/emptyState"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Tìm kiếm người dùng để bắt đầu nhắn tin"
-            android:textColor="@color/text_hint"
-            android:textSize="14sp" />
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_chat"
+                android:alpha="0.3" />
+
+            <TextView
+                android:id="@+id/txtEmpty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Tìm kiếm người dùng\nđể bắt đầu nhắn tin"
+                android:textColor="@color/text_hint"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
 
         <ProgressBar
             android:id="@+id/progressBar"
